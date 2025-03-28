@@ -235,7 +235,7 @@ updateAppliedBrightness() {
 
     # If currently plugged to HDMI or brightness calculation crapped out, let's just use the LED brightness at 100%.
     if [ "$HDMI_STATE" = "HDMI=1" ] || [ -z $APPLIED_BRIGHTNESS ]; then
-      APPLIED_BRIGHTNESS=${LAST_LED_VALUES[1]}
+      APPLIED_BRIGHTNESS=$LED_BRIGHTNESS
     fi
   else
     APPLIED_BRIGHTNESS=$LED_BRIGHTNESS
