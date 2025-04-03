@@ -1,12 +1,33 @@
-#!/bin/bash
+#/bin/bash
+
+BOARD=$(cat /boot/boot/batocera.board)
+# We only want the script to run for these devices
+if [ "$BOARD" != "trimui-brick" ] && [ "$BOARD" != "trimui-smart-pro" ]; then
+    exit 1
+fi
+
+MAX_WAITING_TIME=100
 
 case "${1}" in
    suspend)
       ifconfig wlan0 down
+      # Not make sure Wi-Fi is down before proceeding
+      COUNTER=0
+      while ifconfig | grep -q "wlan0"; do
+          if [ "$COUNTER" -eq "$MAX_WAITING_TIME" ]; then
+            # Error case. Should not occur!
+            break
+          fi
+          COUNTER=$((COUNTER+1))
+          sleep 0.1s
+      done
+      # Wi-Fi is down or max waiting time exceeded.
       ;;
-   resume)
-      ifconfig wlan0 up
+   thaw|resume)
+      WIFI_ENABLED=$(/usr/bin/batocera-settings-get wifi.enabled)
+      if [ $WIFI_ENABLED -eq 1 ]; then
+          ifconfig wlan0 up
+      fi
       ;;
 esac
 exit 0
-
