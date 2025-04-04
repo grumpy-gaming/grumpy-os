@@ -34,7 +34,9 @@ inotifywait -qq -t "$LONG_PRESS_THRESHOLD" -e close_write "$POWER_BUTTON_STATE"
     if [ "$(cat "$POWER_BUTTON_STATE")" = "0" ]; then
         suspend_system
     elif [ "$(cat "$POWER_BUTTON_STATE")" = "1" ]; then
-        knulli-rumble 0.1
+        if [ -f /usr/bin/knulli-rumble ]; then
+            knulli-rumble 0.1
+        fi
         shutdown_system
     fi
 
