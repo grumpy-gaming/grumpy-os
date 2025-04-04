@@ -3,7 +3,6 @@
 
 POWER_BUTTON_STATE="/var/run/power-button-state.flag"
 LOCK_FILE="/var/run/power-button-script.lock"
-RUMBLE_FILE="/sys/class/power_supply/axp2202-battery/moto"
 
 exec 200>"${LOCK_FILE}"
 flock -n 200 || exit 1
@@ -35,7 +34,7 @@ inotifywait -qq -t "$LONG_PRESS_THRESHOLD" -e close_write "$POWER_BUTTON_STATE"
     if [ "$(cat "$POWER_BUTTON_STATE")" = "0" ]; then
         suspend_system
     elif [ "$(cat "$POWER_BUTTON_STATE")" = "1" ]; then
-        echo 1 > "$RUMBLE_FILE" && sleep 0.1 && echo 0 > "$RUMBLE_FILE"
+        knulli-rumble 0.1
         shutdown_system
     fi
 
