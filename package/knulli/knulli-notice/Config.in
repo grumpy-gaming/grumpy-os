@@ -1,0 +1,4 @@
+config BR2_PACKAGE_KNULLI_NOTICE
+    bool "knulli-notice"
+    help
+      Knulli pdf notice
