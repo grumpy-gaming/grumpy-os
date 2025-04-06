@@ -36,31 +36,62 @@ case "${ACTION}" in
         MODE="$2"
         case "${MODE}" in
             auto)
-                ARCH=$(cat /usr/share/batocera/batocera.arch)
-                BOARD=$(cat /boot/boot/batocera.board)
+                BT_SINK=$(LANG=C pactl list short sinks | grep bluez_output | awk '{print $2}' | head -n1)
+                if [ -n "$BT_SINK" ]; then
+                    MODE="$BT_SINK"
+                    LANG=C pactl set-default-sink "${MODE}" || exit 1
+                else
+                    ARCH=$(cat /usr/share/batocera/batocera.arch)
+                    BOARD=$(cat /boot/boot/batocera.board)
 
-                case "${ARCH}" in
-                    "rk3399")
-                        MODE=alsa_output.platform-hdmi-sound.stereo-fallback
-                        LANG=C pactl set-default-sink "${MODE}" || exit 1
-                        ;;
-                    "s922x")
-                        if [[ "$BOARD" == "ogu" ]]; then
-                            LANG=C pactl set-default-sink INTERNAL
-                            amixer -c 0 -q sset "Master" 100%
-                            amixer -c 0 sset 'Playback Mux' SPK
-                            amixer -c 0 -q sset 'FRDDR_A SINK 1 SEL' 'OUT 1'
-                            amixer -c 0 -q sset 'FRDDR_A SRC 1 EN' 'on'
-                        fi
-                        ;;
-                    "rk3326")
-                        LANG=C pactl set-default-sink INTERNAL
-                        amixer -c 0 cset name='Playback Path' SPK
-                        ;;
-                    *)
-                        # do nothing!
-                        ;;
-                esac
+                    case "${ARCH}" in
+                        "rk3399")
+                            MODE=alsa_output.platform-hdmi-sound.stereo-fallback
+                            LANG=C pactl set-default-sink "${MODE}" || exit 1
+                            ;;
+                        "s922x")
+                            if [[ "$BOARD" == "ogu" ]]; then
+                                LANG=C pactl set-default-sink INTERNAL
+                                amixer -c 0 -q sset "Master" 100%
+                                amixer -c 0 sset 'Playback Mux' SPK
+                                amixer -c 0 -q sset 'FRDDR_A SINK 1 SEL' 'OUT 1'
+                                amixer -c 0 -q sset 'FRDDR_A SRC 1 EN' 'on'
+                            fi
+                            ;;
+                        "rk3326")
+                            if [[ "$BOARD" == "r36s" ]]; then
+                                amixer -c 0 sset "Playback Path" "SPK_HP"
+                            else
+                                LANG=C pactl set-default-sink INTERNAL
+                                amixer -c 0 cset name='Playback Path' SPK
+                            fi
+                            ;;
+                        "h700")
+                            # Needed if booted with hdmi cable plugged in
+                            HDMI_STATE="$(cat /sys/devices/platform/soc/6000000.hdmi/extcon/hdmi/state)"
+                            if [ "$HDMI_STATE" = "HDMI=1" ]; then
+                                MODE=alsa_output._sys_devices_platform_soc_soc_03000000_ahub1_mach_sound_card2.stereo-fallback
+                            else
+                                MODE=alsa_output._sys_devices_platform_soc_soc_03000000_codec_mach_sound_card0.stereo-fallback
+                            fi
+                            amixer -c 0 sset "OutputL Mixer DACL" on
+                            amixer -c 0 sset "OutputL Mixer DACR" off
+                            amixer -c 0 sset "OutputR Mixer DACL" off
+                            amixer -c 0 sset "OutputR Mixer DACR" on
+                            amixer -c 0 sset LINEOUT on
+                            LANG=C pactl set-default-sink "${MODE}" || exit 1
+                            ;;
+                        "a133")
+                            MODE=alsa_output._sys_devices_platform_soc_sndcodec_sound_card0.playback.0.0
+                            LANG=C pactl set-default-sink "${MODE}" || exit 1
+                            amixer -c 0 sset HpSpeaker on
+                            amixer -c 0 sset Headphone "$(batocera-settings-get audio.headphone || echo 0)"
+                            ;;
+                        *)
+                            # do nothing!
+                            ;;
+                    esac
+                fi
                 ;;
             *)
                 LANG=C pactl set-default-sink "${MODE}" || exit 1
