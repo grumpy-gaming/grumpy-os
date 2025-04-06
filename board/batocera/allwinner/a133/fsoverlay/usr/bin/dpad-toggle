@@ -14,11 +14,13 @@ if [[ ! -d dir ]]; then
 fi
 
 if [ -f "$DPAD_AS_ANALOG_FILE" ]; then
-    knulli-rgb-led-daemon animation achievement
+    knulli-rumble 0.1
     rm "$DPAD_DISABLED_FILE"
     rm "$DPAD_AS_ANALOG_FILE"
 else
-    knulli-rgb-led-daemon animation achievement
+    knulli-rumble 0.1
+    sleep 0.2
+    knulli-rumble 0.1
     touch "$DPAD_DISABLED_FILE"
     touch "$DPAD_AS_ANALOG_FILE"
 fi
