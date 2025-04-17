@@ -12,6 +12,8 @@ DEBUG_LOG=/userdata/system/logs/S20connman.log
 #
 #  NOTE: This is not yet working.
 DEBUG_MODE=
+# Clear previous log
+: > "$DEBUG_LOG"
 
 # if /userdata is not yet available
 if ! [ -f "$BATOCONF" ]; then
@@ -113,6 +115,8 @@ batocera_wifi_configure() {
 		${optionalPassphrase}
 		${optionalPriority}
 		Autoconnect=true
+		[IPv6]
+		Method=off
 	_EOF_
     else
         rm "${settings_file}" 2>/dev/null
@@ -162,49 +166,58 @@ wifi_disable() {
     connmanctl disable wifi >> $DEBUG_LOG 2>> $DEBUG_LOG
 }
 
+do_start() {
+    echo "$SCRIPT_NAME: start" >> $DEBUG_LOG
+
+    batocera_hostname
+    wifi_configure_all
+
+    echo "$SCRIPT_NAME: start: > start-stop-daemon -S -q -m -b -p /var/run/connmand.pid --exec /usr/sbin/connmand -- -n -r $DEBUG_MODE" >> $DEBUG_LOG
+    start-stop-daemon -S -q -m -b -p /var/run/connmand.pid --exec /usr/sbin/connmand -- -n -r $DEBUG_MODE  2>> $DEBUG_LOG >> $DEBUG_LOG
+
+    for i in $(seq 1 20); do
+        echo "$SCRIPT_NAME: start > connmanctl state" >> $DEBUG_LOG
+        if connmanctl state 2>> $DEBUG_LOG | tee -a $DEBUG_LOG | grep -qE '^[ ]*State[ ]='; then
+            break
+        fi
+        sleep 0.25
+    done
+    sleep 0.5
+
+    if [ "$settingsWlan" = "1" ];then
+        # Detach the wifi enable process
+        wifi_enable &
+    else
+        wifi_disable
+    fi
+
+    echo "$SCRIPT_NAME: start: done." >> $DEBUG_LOG
+    echo "done."
+}
+
+do_stop() {
+    echo "$SCRIPT_NAME: stop" >> $DEBUG_LOG
+    printf "Stopping connman: "
+    wifi_disable
+
+    echo "$SCRIPT_NAME: stop: >start-stop-daemon -K -q -p /var/run/connmand.pid" >> $DEBUG_LOG
+
+    start-stop-daemon -K -q -p /var/run/connmand.pid  2>> $DEBUG_LOG >> $DEBUG_LOG
+    echo "$SCRIPT_NAME: stop: done." >> $DEBUG_LOG
+    echo "done."
+}
+
 case "$1" in
     start)
-        echo "$SCRIPT_NAME: start" >> $DEBUG_LOG
-        
-        batocera_hostname
-        wifi_configure_all
-        
-        echo "$SCRIPT_NAME: start: > start-stop-daemon -S -q -m -b -p /var/run/connmand.pid --exec /usr/sbin/connmand -- -n -r $DEBUG_MODE" >> $DEBUG_LOG
-        start-stop-daemon -S -q -m -b -p /var/run/connmand.pid --exec /usr/sbin/connmand -- -n -r $DEBUG_MODE  2>> $DEBUG_LOG >> $DEBUG_LOG
-        
-        for i in $(seq 1 20); do
-            echo "$SCRIPT_NAME: start > connmanctl state" >> $DEBUG_LOG
-            if connmanctl state 2>> $DEBUG_LOG | tee -a $DEBUG_LOG | grep -qE '^[ ]*State[ ]='; then
-                break
-            fi
-            sleep 0.25
-        done
-        sleep 0.5
-
-        if [ "$settingsWlan" = "1" ];then
-            # Detach the wifi enable process
-            wifi_enable &
-        else
-            wifi_disable
-        fi
-
-        echo "$SCRIPT_NAME: start: done." >> $DEBUG_LOG
-        echo "done."
-    ;;
+        do_start
+        ;;
     stop)
-        echo "$SCRIPT_NAME: stop" >> $DEBUG_LOG
-        printf "Stopping connman: "
-        
-        echo "$SCRIPT_NAME: stop: >start-stop-daemon -K -q -p /var/run/connmand.pid" >> $DEBUG_LOG
-        
-        start-stop-daemon -K -q -p /var/run/connmand.pid  2>> $DEBUG_LOG >> $DEBUG_LOG
-        echo "$SCRIPT_NAME: stop: done." >> $DEBUG_LOG
-        echo "done."
+        do_stop
         ;;
     restart | reload)
-        $0 stop
+        do_stop
         sleep 0.5
-        $0 start
+        do_start
         ;;
     *)
         echo "usage: $0 {start|stop|restart|reload}"
