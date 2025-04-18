@@ -1,4 +1,37 @@
-# knulli - firefly - alpha (20241111)
+# Knulli - Gladiator - ???
+
+## ChangeLog
+
+### ADDED ###
+- Device support
+    - support for RG34XX
+- OS features
+    - Introduced a new Knulli on-screen manual
+    - Introduced Device Settings menu
+        - RGB Settings: Moved to Device Settings
+        - RGB Settings: Battery indication can now be configured
+        - Power Management: Moved to Device Settings
+        - Power Management: New options added, aggressive battery saver
+        - Pico-8 installer can be launched from Device Settings
+- Emulation features
+    - Introduced ScummVM auto-detection
+
+### FIXED ###
+    - Fixed RGB support for TrimUI Brick
+    - Fixed RGB brightness when booting when HDMI is already plugged
+    - Fixed sleep mode for TrimUI Brick/Smart Pro
+    - Fixed Dpad/Analog toggle for TrimUI Brick
+    - Fixed rumble confirmations on TrimUI Brick (still no rumble in-game)
+    - Adapted bezel positioning via configgen to new requirements of RetroArch 1.20.x
+
+### CHANGED / IMPROVED
+- OS features
+    - RGB daemon must no longer be enabled as a service
+- Emulation features
+    - Updated RetroArch to 1.20.x
+    - Updated ScummVM to 2.9.0
+
+# Knulli - Firefly - (20241204)
 
 ## ChangeLog
 
