@@ -20,14 +20,15 @@
     - Introduced a toggle to the Ports system which purposely breaks cardinal mapping by swapping A/B and X/Y to match the Nintendo-style button labels with in-game prompts for Xbox controllers
 
 ### FIXED ###
-    - Fixed RGB support for TrimUI Brick
-    - Fixed RGB brightness when booting when HDMI is already plugged
-    - Fixed sleep mode for TrimUI Brick/Smart Pro
-    - Fixed Dpad/Analog toggle for TrimUI Brick
-    - Fixed rumble confirmations on TrimUI Brick (still no rumble in-game)
-    - Adapted bezel positioning via configgen to new requirements of RetroArch 1.20.x
-    - Battery saving no longer interrupts MPV (the video player)
-    - Fixed issues with auto-pairing and re-connecting of Bluetooth controllers
+
+- Fixed RGB support for TrimUI Brick
+- Fixed RGB brightness when booting when HDMI is already plugged
+- Fixed sleep mode for TrimUI Brick/Smart Pro
+- Fixed Dpad/Analog toggle for TrimUI Brick
+- Fixed rumble confirmations on TrimUI Brick (still no rumble in-game)
+- Adapted bezel positioning via configgen to new requirements of RetroArch 1.20.x
+- Battery saving no longer interrupts MPV (the video player)
+- Fixed issues with auto-pairing and re-connecting of Bluetooth controllers
 
 ### CHANGED / IMPROVED
 - OS features
