@@ -25,12 +25,6 @@ if [ ! -f "$PICO_8_ES_SYSTEMS_CONFIG" ]; then
   exit 2
 fi
 
-if [ -d "$PICO_DIR" ]; then
-    echo "Pico-8 is already installed at $PICO_DIR."
-    echo "If you want to reinstall Pico-8, please remove the Pico-8 folder from your BIOS folder."
-    exit 1
-fi
-
 # Unzip Pico-8
 mkdir "$TEMP_INSTALL_DIR"
 unzip "$PICO_8_ZIPFILE" -d "$TEMP_INSTALL_DIR"
@@ -56,9 +50,17 @@ if [ ! -f $PICO_8_DAT_FILE ]; then
   exit 2
 fi
 
-# Create BIOS folder.
-mkdir $PICO_DIR
-echo "Created BIOS folder for Pico-8."
+# Clear existing BIOS folder or create new BIOS folder.
+if [ -d "$PICO_DIR" ]; then
+  echo "Found BIOS folder for Pico-8."
+  if [ ! -z "$( ls -A "$PICO_DIR" )" ]; then
+    rm $PICO_DIR/*
+    echo "Removed previous Pico-8 installation."
+  fi
+else
+  mkdir $PICO_DIR
+  echo "Created BIOS folder for Pico-8."
+fi
 
 # Move Pico8 files to destination
 mv $PICO_8_64_FILE "$PICO_DIR/pico8"

@@ -12099,6 +12099,11 @@ demul:
 sh:
   features: [padtokeyboard]
   shared: [powermode, tdp, videomode, bezel, bezel_stretch, hud, hud_corner, bezel.tattoo, bezel.tattoo_corner, bezel.tattoo_file, bezel.resize_tattoo]
+  cfeatures:
+        xbox_layout:
+            prompt: SWITCH A/B and X/Y
+            description: Adjusts face buttons to match Xbox controller button labels.
+            preset: switchauto
 
 xenia:
   features: []

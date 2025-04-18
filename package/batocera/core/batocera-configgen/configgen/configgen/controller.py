@@ -38,6 +38,30 @@ _DEFAULT_SDL_MAPPING: Final = {
     'hotkey': 'guide'
 }
 
+_XBOX_SDL_MAPPING: Final = {
+    'b': 'b',
+    'a': 'a',
+    'x': 'x',
+    'y': 'y',
+    'l2': 'lefttrigger',
+    'r2': 'righttrigger',
+    'l3': 'leftstick',
+    'r3': 'rightstick',
+    'pageup': 'leftshoulder',
+    'pagedown': 'rightshoulder',
+    'start': 'start',
+    'select': 'back',
+    'up': 'dpup',
+    'down': 'dpdown',
+    'left': 'dpleft',
+    'right': 'dpright',
+    'joystick1up': 'lefty',
+    'joystick1left': 'leftx',
+    'joystick2up': 'righty',
+    'joystick2left': 'rightx',
+    'hotkey': 'guide'
+}
+
 
 def _key_to_sdl_game_controller_config(keyname: str, input: Input, /) -> str | None:
     """
@@ -103,7 +127,7 @@ class Controller:
     def replace(self, /, **changes: Unpack[_ControllerChanges]) -> Self:
         return replace(self, **changes, inputs_=self.inputs)
 
-    def generate_sdl_game_db_line(self, sdl_mapping: Mapping[str, str] = _DEFAULT_SDL_MAPPING, /) -> str:
+    def generate_sdl_game_db_line(self, sdl_mapping: Mapping[str, str], /) -> str:
         """Returns an SDL_GAMECONTROLLERCONFIG-formatted string for the given configuration."""
         config = [self.guid, self.real_name, "platform:Linux"]
 
@@ -162,11 +186,28 @@ class Controller:
     def load_for_players(cls, max_players: int, args: Namespace, /) -> ControllerDict:
         all_controllers = cls.load_all()
 
-        return {
-            controller.player_number: controller
-            for player_number in range(1, max_players + 1)
-            if (controller := cls.find_best_controller_config(all_controllers, args, player_number)) is not None
-        }
+        controller_list = []
+        for player_number in range(1, max_players + 1):
+            controller = cls.find_best_controller_config(all_controllers, args, player_number)
+            if controller:
+                controller_list.append(controller)
+
+        # If there's more than one controller, assume the first is internal and remove it
+        if len(controller_list) > 1:
+            controller_list = [ctrl for ctrl in controller_list if not is_internal(ctrl)]
+
+        # Reassign player numbers
+        controllers: ControllerDict = {}
+        for i, ctrl in enumerate(controller_list[:max_players], start=1):
+            ctrl.player_number = i
+            controllers[i] = ctrl
+        def is_internal(ctrl):
+            # If user already set this as player 1, respect it
+            if ctrl.player_number == 1:
+                return False
+                        # Fallback to path-based detection
+            return is_internal_phys(ctrl.device_path)
+        return controllers
 
     @classmethod
     def find_best_controller_config(
@@ -228,7 +269,10 @@ class Controller:
 
 
 def generate_sdl_game_controller_config(controllers: ControllerMapping, /) -> str:
-    return "\n".join(controller.generate_sdl_game_db_line() for controller in controllers.values())
+    # Auto-detect Xbox layout via flag file for ports
+    xbox_layout = Path("/var/run/ports_xbox_layout.flag").exists()
+    sdl_mapping = _XBOX_SDL_MAPPING if xbox_layout else _DEFAULT_SDL_MAPPING
+    return "\n".join(controller.generate_sdl_game_db_line(sdl_mapping) for controller in controllers.values())
 
 
 def write_sdl_controller_db(
