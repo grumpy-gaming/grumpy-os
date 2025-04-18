@@ -11,10 +11,13 @@
         - RGB Settings: Moved to Device Settings
         - RGB Settings: Battery indication can now be configured
         - Power Management: Moved to Device Settings
-        - Power Management: New options added, aggressive battery saver
+        - Power Management: New options added, introduced aggressive battery saver
+        - USB Settings: Toggle between ADB, MTP, and no USB access
         - Pico-8 installer can be launched from Device Settings
+    - Introduced automatic assignment of controllers to players (in order of connecting the controllers)
 - Emulation features
     - Introduced ScummVM auto-detection
+    - Introduced a toggle to the Ports system which purposely breaks cardinal mapping by swapping A/B and X/Y to match the Nintendo-style button labels with in-game prompts for Xbox controllers
 
 ### FIXED ###
     - Fixed RGB support for TrimUI Brick
@@ -23,10 +26,13 @@
     - Fixed Dpad/Analog toggle for TrimUI Brick
     - Fixed rumble confirmations on TrimUI Brick (still no rumble in-game)
     - Adapted bezel positioning via configgen to new requirements of RetroArch 1.20.x
+    - Battery saving no longer interrupts MPV (the video player)
+    - Fixed issues with auto-pairing and re-connecting of Bluetooth controllers
 
 ### CHANGED / IMPROVED
 - OS features
     - RGB daemon must no longer be enabled as a service
+    - Improved stability and consistency of Wi-Fi
 - Emulation features
     - Updated RetroArch to 1.20.x
     - Updated ScummVM to 2.9.0
