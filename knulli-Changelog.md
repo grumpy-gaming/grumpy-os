@@ -32,6 +32,7 @@
 
 ### CHANGED / IMPROVED
 - OS features
+    - Default file system is exFAT now
     - RGB daemon must no longer be enabled as a service
     - Improved stability and consistency of Wi-Fi
 - Emulation features
