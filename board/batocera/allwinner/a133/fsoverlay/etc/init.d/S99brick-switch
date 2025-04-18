@@ -1,0 +1,23 @@
+#!/bin/bash
+
+BOARD="$(cat /boot/boot/batocera.board)"
+[ "$BOARD" != "trimui-brick" ] && exit 1
+
+case "$1" in
+    start)
+        SWITCH_STATE=$(cat /sys/class/gpio/gpio243/value)
+        BRICK_SWITCH="/usr/bin/brick-switch"
+
+        if [ "$SWITCH_STATE" -eq 1 ]; then
+            "$BRICK_SWITCH" enable
+        else
+            "$BRICK_SWITCH" disable
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {start}"
+        exit 1
+        ;;
+esac
+
+exit 0

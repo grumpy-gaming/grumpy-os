@@ -1,0 +1,43 @@
+#!/bin/bash
+
+MODE="$(/usr/bin/batocera-settings-get system.brickswitch.mode)"
+if [[ -z "$MODE" || ! "$MODE" =~ ^(mute|rgboff|airplane)$ ]]; then
+    MODE="mute" # default can be mute|rgboff|airplane
+    /usr/bin/batocera-settings-set system.brickswitch.mode "$MODE"
+fi
+
+ACTION="$1"
+case "$ACTION" in
+    enable)
+        case "$MODE" in
+            mute)
+                /usr/bin/batocera-audio setSystemVolume mute
+                ;;
+            rgboff)
+                /usr/bin/batocera-settings-set led.mode 0
+                ;;
+            airplane)
+                /usr/bin/batocera-planemode enable
+                ;;
+        esac
+        ;;
+    disable)
+        case "$MODE" in
+            mute)
+                /usr/bin/batocera-audio setSystemVolume unmute
+                ;;
+            rgboff)
+                /usr/bin/batocera-settings-set led.mode 1
+                ;;
+            airplane)
+                /usr/bin/batocera-planemode disable
+                ;;
+        esac
+        ;;
+    *)
+        echo "Usage: $0 [enable|disable]"
+        exit 1
+        ;;
+esac
+
+exit 0
