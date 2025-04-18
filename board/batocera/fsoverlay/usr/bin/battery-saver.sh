@@ -20,6 +20,7 @@ trap 'cleanup' EXIT
 
 STATE="active"
 STATE_FLAG="/var/run/activity_state.flag"
+PAUSE_FLAG="/var/run/battery_saver.pause"
 BRIGHTNESS="$(batocera-brightness)"
 GOVERNOR=""
 SAVED_GOVERNOR=""
@@ -143,6 +144,10 @@ do_inactivity() {
                         echo "powersave" > "$cpu"
                     done
                 fi
+
+                if [ "$(batocera-settings-get global.retroachievements)" = "0" ]; then
+                    /etc/init.d/S20connman stop
+                fi
             fi
         ;;
         dispoff)
@@ -187,6 +192,10 @@ do_activity() {
                 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
                     echo "$SAVED_GOVERNOR" > "$cpu"
                 done
+
+                if [ "$(batocera-settings-get global.retroachievements)" = "0" ]; then
+                    /etc/init.d/S20connman start
+                fi
             fi
 
             batocera-audio setSystemVolume unmute
@@ -236,7 +245,7 @@ monitor_controllers() {
             esac
         fi
 
-        if [ "$input_detected" = "false" ]; then
+        if [ "$input_detected" = "false" ] && [ ! -f "$PAUSE_FLAG" ]; then
             if [ "$STATE" = "active" ]; then
                 do_inactivity
             elif [ "$STATE" = "inactive" ]; then
