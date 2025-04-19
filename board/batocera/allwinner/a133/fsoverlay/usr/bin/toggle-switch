@@ -1,9 +1,14 @@
 #!/bin/bash
 
-MODE="$(/usr/bin/batocera-settings-get system.brickswitch.mode)"
+BOARD="$(cat /boot/boot/batocera.board)"
+if [ "$BOARD" != "trimui-brick" ] && [ "$BOARD" != "trimui-smart-pro" ]; then
+    exit 1
+fi
+
+MODE="$(/usr/bin/batocera-settings-get system.toggleswitch.mode)"
 if [[ -z "$MODE" || ! "$MODE" =~ ^(mute|rgboff|airplane)$ ]]; then
     MODE="mute" # default can be mute|rgboff|airplane
-    /usr/bin/batocera-settings-set system.brickswitch.mode "$MODE"
+    /usr/bin/batocera-settings-set system.toggleswitch.mode "$MODE"
 fi
 
 ACTION="$1"
