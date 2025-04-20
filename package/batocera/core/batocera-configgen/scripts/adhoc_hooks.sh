@@ -1,7 +1,7 @@
 #!/bin/bash
 
-INTERFACE="wlan0"
 CHANNEL="6"
+INTERFACE=$(ip link show | awk -F: '$2 ~ /wl/ { gsub(/ /, "", $2); print $2 }' | head -n1)
 
 SSID=$(batocera-settings-get wifi.adhoc.ssid)
 PASSPHRASE=$(batocera-settings-get wifi.adhoc.key)
@@ -19,7 +19,9 @@ should_start_ap() {
         return 1
     fi
 
-    ip link show "$INTERFACE" > /dev/null 2>&1 || return 1
+    if [ -z "$INTERFACE" ]; then
+        return 1
+    fi
 
     if ip addr show "$INTERFACE" | grep -q 'inet '; then
         return 1
@@ -35,10 +37,10 @@ case $1 in
 
             ip link set "$INTERFACE" up
             ip addr flush dev "$INTERFACE"
+            sleep 0.1
             ip addr add 192.168.4.1/24 dev "$INTERFACE"
 
-            if [ ! -f "$hostapd_conf" ]; then
-                cat <<EOF > "$hostapd_conf"
+            cat <<EOF > "$hostapd_conf"
 interface=$INTERFACE
 driver=nl80211
 ssid=$SSID
@@ -50,7 +52,6 @@ wpa_passphrase=$PASSPHRASE
 wpa_key_mgmt=WPA-PSK
 rsn_pairwise=CCMP
 EOF
-            fi
 
             hostapd "$hostapd_conf" &
             echo $! > "$hostapd_pid"
@@ -63,7 +64,7 @@ EOF
             echo $! > "$dnsmasq_pid"
 
             for i in {1..100}; do
-                if iw dev wlan0 info | grep -q "type AP"; then
+                if iw dev "$INTERFACE" info | grep -q "type AP"; then
                     break
                 fi
                 sleep 0.1

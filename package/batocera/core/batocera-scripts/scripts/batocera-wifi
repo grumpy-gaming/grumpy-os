@@ -71,7 +71,7 @@ case "${ACTION}" in
         wait_for_ip down
         ;;
     "getroute")
-        ip route show default dev wlan0 | awk '{print $3}'
+        ip route show default | awk '/^default/ && $0 ~ /wl/ { print $3 }'
         ;;
     *)
         do_help
