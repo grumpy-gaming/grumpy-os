@@ -1,19 +1,23 @@
 #!/bin/sh
 
-SCRIPT_NAME=S20connman
 ### choose configuration file
 BATOCONF="/userdata/system/batocera.conf"
 DEFAULTCONF="/usr/share/batocera/datainit/system/batocera.conf"
 BOOTCONF="/boot/batocera-boot.conf"
-DEBUG_LOG=/userdata/system/logs/S20connman.log
 
-#  add -d to DEBUG_MODE to put connman into debug mode, you'll also need to adjust syslog
-#  have connman log to syslog.
-#
-#  NOTE: This is not yet working.
-DEBUG_MODE=
-# Clear previous log
-: > "$DEBUG_LOG"
+# Lets wait for emulation station to initialize...
+echo "Waiting for emulation station (up to 10 seconds)..."
+
+i=0
+while [ "$i" -lt 100 ]; do
+    [ -f /tmp/emulationstation.ready ] && break
+    sleep 0.1 # Need to make sure it launches as fast as possible once ES is ready
+    i=$((i + 1))
+done
+
+if [ "$i" -eq 100 ]; then
+    echo "Emulation station not ready after 10 seconds. Continuing anyway..."
+fi
 
 # if /userdata is not yet available
 if ! [ -f "$BATOCONF" ]; then
@@ -55,7 +59,6 @@ batocera_hostname() {
 
 # configure wifi files, always
 batocera_wifi_configure() {
-    echo "$SCRIPT_NAME: batocera_wifi_configure" >> $DEBUG_LOG
     X=$1
 
     settings_hide=false; settings_name="${X}"; settings_priority=
@@ -86,11 +89,6 @@ batocera_wifi_configure() {
         fi
     fi
 
-    #  Disabled as this will log your SSID details which may not be wanted by users.
-    #echo "$SCRIPT_NAME: batocera_wifi_configure: ssid: $settings_ssid" >> $DEBUG_LOG
-    #echo "$SCRIPT_NAME: batocera_wifi_configure: ssid: $settings_key" >> $DEBUG_LOG
-    #echo "$SCRIPT_NAME: batocera_wifi_configure: ssid: $settings_file" >> $DEBUG_LOG
-
     if [ -n "${settings_key}" ]; then
         optionalPassphrase="Passphrase=${settings_key}"
     else
@@ -103,7 +101,7 @@ batocera_wifi_configure() {
         optionalPriority=
     fi
 
-    if [ -n "$settings_ssid" -a "$settingsWlan" = "1" ];then
+    if [ -n "$settings_ssid" ] && [ "$settingsWlan" = "1" ]; then
         mkdir -p "/var/lib/connman"
         cat > "${settings_file}" <<-_EOF_
 		[global]
@@ -124,60 +122,31 @@ batocera_wifi_configure() {
 }
 
 wifi_configure_all() {
-    echo "$SCRIPT_NAME: wifi_configure_all:" >> $DEBUG_LOG
-
     for i in 1 2 3 .hidden .adhoc; do
         batocera_wifi_configure "$i"
     done
 }
 
 wifi_enable() {
-    echo "$SCRIPT_NAME: wifi_enable()" >> $DEBUG_LOG
-
     settingsCountry="$(/usr/bin/batocera-settings-get -f "$BATOCONF" wifi.country)"
     [ -n "$settingsCountry" ] && /usr/sbin/iw reg set "$settingsCountry"
-        
-    echo "$SCRIPT_NAME: wifi_enable(): Country: $settingsCountry" >> $DEBUG_LOG
 
-    echo "$SCRIPT_NAME: wifi_enable(): '> connmanctl enable wifi'" >> $DEBUG_LOG
-    
-    connmanctl enable wifi 2>> $DEBUG_LOG >> $DEBUG_LOG
-   
-    echo "$SCRIPT_NAME: wifi_enable(): '> connmanctl scan wifi'" >> $DEBUG_LOG
-    #  We redirect the output of scan wifi because we need to check for a NO CARRIER error.
-    connmanctl scan wifi 2> /tmp/connmanctl_scan_wifi.err > /tmp/connmanctl_scan_wifi.log 
-    
-    cat /tmp/connmanctl_scan_wifi.log >> $DEBUG_LOG
-    cat /tmp/connmanctl_scan_wifi.err >> $DEBUG_LOG
-    
-    if grep -q "wifi: No carrier" /tmp/connmanctl_scan_wifi.err ; then
-        echo "$SCRIPT_NAME: wifi_enable(): NO CARRIER" >> $DEBUG_LOG
-    fi
-    
-    echo "$SCRIPT_NAME: wifi_enable(): '> connmanctl technologies'" >> $DEBUG_LOG
-    connmanctl technologies >> $DEBUG_LOG 2>> $DEBUG_LOG
+    connmanctl enable wifi 2>/dev/null
+    connmanctl scan wifi 2>/dev/null
 }
 
 wifi_disable() {
-    echo "$SCRIPT_NAME: wifi_disable():" >> $DEBUG_LOG
-    
-    echo "$SCRIPT_NAME: wifi_disable(): > connmanctl disable wifi" >> $DEBUG_LOG
-    
-    connmanctl disable wifi >> $DEBUG_LOG 2>> $DEBUG_LOG
+    connmanctl disable wifi 2>/dev/null
 }
 
 do_start() {
-    echo "$SCRIPT_NAME: start" >> $DEBUG_LOG
-
     batocera_hostname
     wifi_configure_all
-
-    echo "$SCRIPT_NAME: start: > start-stop-daemon -S -q -m -b -p /var/run/connmand.pid --exec /usr/sbin/connmand -- -n -r $DEBUG_MODE" >> $DEBUG_LOG
-    start-stop-daemon -S -q -m -b -p /var/run/connmand.pid --exec /usr/sbin/connmand -- -n -r $DEBUG_MODE  2>> $DEBUG_LOG >> $DEBUG_LOG
+    printf "Starting connman: "
+    start-stop-daemon -S -q -m -b -p /var/run/connmand.pid --exec /usr/sbin/connmand -- -n -r 2>/dev/null
 
     for i in $(seq 1 20); do
-        echo "$SCRIPT_NAME: start > connmanctl state" >> $DEBUG_LOG
-        if connmanctl state 2>> $DEBUG_LOG | tee -a $DEBUG_LOG | grep -qE '^[ ]*State[ ]='; then
+        if connmanctl state 2>/dev/null | grep -qE '^[ ]*State[ ]='; then
             break
         fi
         sleep 0.25
@@ -191,19 +160,14 @@ do_start() {
         wifi_disable
     fi
 
-    echo "$SCRIPT_NAME: start: done." >> $DEBUG_LOG
     echo "done."
 }
 
 do_stop() {
-    echo "$SCRIPT_NAME: stop" >> $DEBUG_LOG
     printf "Stopping connman: "
     wifi_disable
 
-    echo "$SCRIPT_NAME: stop: >start-stop-daemon -K -q -p /var/run/connmand.pid" >> $DEBUG_LOG
-
-    start-stop-daemon -K -q -p /var/run/connmand.pid  2>> $DEBUG_LOG >> $DEBUG_LOG
-    echo "$SCRIPT_NAME: stop: done." >> $DEBUG_LOG
+    start-stop-daemon -K -q -p /var/run/connmand.pid  2>/dev/null
     echo "done."
 }
 
@@ -223,3 +187,5 @@ case "$1" in
         echo "usage: $0 {start|stop|restart|reload}"
         ;;
 esac
+
+exit 0

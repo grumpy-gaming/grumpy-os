@@ -1836,7 +1836,7 @@ libretro:
                     "4":           4
             fbneo-hhtate:
                 prompt: HANDHELD TATE MODE
-                description: Rotates the display and remaps inputs for device to be used sideways.
+                description: Rotates the display and remaps inputs for compatible devices to be used sideways.
                 choices:
                     "Off":    "False"
                     "On":     "True"
@@ -2889,7 +2889,7 @@ libretro:
                     "Rotated 4-Way Stick (Q*Bert)": "qbert"
             mame-hhtate:
                 prompt: HANDHELD TATE MODE
-                description: Rotates the display and remaps inputs for device to be used sideways.
+                description: Rotates the display and remaps inputs for compatible devices to be used sideways.
                 choices:
                     "Off":    "False"
                     "On":     "True"

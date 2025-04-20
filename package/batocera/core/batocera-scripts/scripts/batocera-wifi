@@ -22,7 +22,7 @@ wait_for_ip() {
     local mode=$1
     local success=false
 
-    for i in $(seq 1 20); do
+    for i in $(seq 1 30); do
         if [ "$mode" = "up" ]; then
             if ip -4 addr show | grep "inet " | grep -qv "127\.0\.0\.1"; then
                 success=true

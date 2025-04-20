@@ -1,0 +1,7 @@
+config BR2_PACKAGE_RTKBTUSB
+   bool "Realtek Bluetooth USB driver (rtk_btusb)"
+   depends on BR2_LINUX_KERNEL
+   help
+     Build the Realtek USB‐only Bluetooth driver (rtk_btusb) out‐of‐tree
+     against the Buildroot kernel, using the Radxa rtkbt GitHub repo.
+

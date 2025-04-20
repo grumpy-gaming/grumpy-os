@@ -27,9 +27,9 @@ class Advanced_DrasticGenerator(Generator):
 
     def generate(self, system, rom, playersControllers, metadata, guns, wheels, gameResolution):
 
-        advanced_drastic_root = "/userdata/system/advanced_drastic"
-        advanced_drastic_bin = "/userdata/system/advanced_drastic/launch.sh"
-        advanced_drastic_conf = "/userdata/system/advanced_drastic/config/drastic.cfg"
+        advanced_drastic_root = "/userdata/system/configs/advanced_drastic"
+        advanced_drastic_bin = "/userdata/system/configs/advanced_drastic/launch.sh"
+        advanced_drastic_conf = "/userdata/system/configs/advanced_drastic/config/drastic.cfg"
 
         board = os.popen("cat /boot/boot/batocera.board").read()
         board=board.rstrip("\n\r ")
@@ -42,10 +42,10 @@ class Advanced_DrasticGenerator(Generator):
 
         if (not os.path.exists(advanced_drastic_root)) or (board != board_installed):
             os.makedirs(advanced_drastic_root, exist_ok = True)
-            os.system("cp -rv /usr/share/advanced_drastic/* /userdata/system/advanced_drastic")
+            os.system("cp -rv /usr/share/advanced_drastic/* /userdata/system/configs/advanced_drastic")
             if os.path.exists("/usr/share/advanced_drastic/devices/" + board ):
-                os.system("cp -rv /usr/share/advanced_drastic/devices/" + board + "/* /userdata/system/advanced_drastic")
-            os.system("cp /boot/boot/batocera.board /userdata/system/advanced_drastic")
+                os.system("cp -rv /usr/share/advanced_drastic/devices/" + board + "/* /userdata/system/configs/advanced_drastic")
+            os.system("cp /boot/boot/batocera.board /userdata/system/configs/advanced_drastic")
 
         os.chdir(advanced_drastic_root)
         commandArray = [advanced_drastic_bin, rom]
