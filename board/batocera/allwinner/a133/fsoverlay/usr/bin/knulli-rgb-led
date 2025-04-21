@@ -226,7 +226,6 @@ singleRainbow() {
   INDEX=0
   LAST_INDEX=$((SIZE - 1))
   while :; do
-    echo "Delay: $DELAY"
     if [ $INDEX == $LAST_INDEX ]; then
       INDEX=0
     else
