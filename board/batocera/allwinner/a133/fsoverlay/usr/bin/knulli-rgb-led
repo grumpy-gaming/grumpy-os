@@ -1,5 +1,7 @@
 #!/bin/bash
 
+VAR_LED_ANIMATION_PID="/var/run/knulli-rgb-led-animation.pid"
+
 export LC_NUMERIC="en_US.UTF-8"
 
 # Daemon modes
@@ -8,7 +10,7 @@ DAEMON_MODE_STATIC=1
 DAEMON_MODE_BREATHING_FAST=2 # Not supported, yet!
 DAEMON_MODE_BREATHING_MEDIUM=3
 DAEMON_MODE_BREATHING_SLOW=4 # Not supported, yet!
-DAEMON_MODE_SINGLE_RAINBOW=5 # Not supported, yet!
+DAEMON_MODE_SINGLE_RAINBOW=5
 DAEMON_MODE_MULTI_RAINBOW=6 # Not supported, yet!
 DAEMON_MODE_ACHIEVEMENT="achievement"
 
@@ -37,6 +39,30 @@ MODE=0
 # Initialize brightness (none)
 BRIGHTNESS=0
 
+# Prints instructions to stdout.
+printInstructions() {
+  echo "Usage:"
+  echo "       $0 <mode> <brightness> <red> <green> <blue> for modes 1-4"
+  echo "       $0 <mode> <brightness> <speed> for modes 5-6"
+  echo ""
+  echo "Analog stick RGB LED control for TrimUI Smart Pro."
+  echo ""
+  echo "Allowed values"
+  echo "  mode       0-6"
+  echo "             0: off"
+  echo "             1: static"
+  echo "             2: breath (fast)"
+  echo "             3: breath (medium)"
+  echo "             4: breath (slow)"
+  echo "             5: single rainbow (cyling through colors)"
+  echo "             6: multi rainbow (swirl)"
+  echo "  brightness 0-100"
+  echo "  red        0-255"
+  echo "  green      0-255"
+  echo "  blue       0-255"
+  echo ""
+}
+
 # Converts Daemon mode into TrimUI LED mode
 #
 # The knulli-rgb-led-daemon was written for the
@@ -60,13 +86,6 @@ setMode() {
   elif [ $1 -eq $DAEMON_MODE_BREATHING_SLOW ]; then
     echo "Daemon mode 4 (Breath (slow)) is not supported, yet. Using Breath (slow) instead"
     MODE=$LED_MODE_LINEAR # TODO: Is it possible to modify breath speed?
-  elif [ $1 -eq $DAEMON_MODE_SINGLE_RAINBOW ]; then
-    # TODO: Figure out a way to manually run rainbow mode
-    MODE=$LED_MODE_STATIC # TODO: Verify if linear mode is similar to rainbow mode (cycling through colors randomly)
-  elif [ $1 -eq $DAEMON_MODE_MULTI_RAINBOW ]; then
-    # TODO: Figure out a way to manually run multi rainbow mode
-    echo "Daemon mode 6 (Multi Rainbow) is not supported, yet. Using Static instead."
-    MODE=$LED_MODE_STATIC
   fi
 
 }
@@ -136,24 +155,15 @@ setHexColor() {
 }
 
 # Disables the LED by simply turning brightness to 0
-disableLed() {
-
+rgbOff() {
   echo 0 > /sys/class/led_anim/max_scale
-
-}
-
-# Stops the effect that is currently set
-stopEffect() {
-
-  echo 0 > /sys/class/led_anim/effect_enable
-
 }
 
 # Starts the given effect with the given color and brightness
-startEffect() {
+setColor() {
 
   # stop previous effect
-  stopEffect
+  echo 0 > /sys/class/led_anim/effect_enable
 
   # set brightness of next effect
   echo $BRIGHTNESS > /sys/class/led_anim/max_scale
@@ -192,31 +202,6 @@ startEffect() {
 
 }
 
-# Prints instructions to stdout.
-printInstructions() {
-  echo "Usage:"
-  echo "       $0 <mode> <brightness> <red> <green> <blue> for modes 1-4"
-  echo "       $0 <mode> <brightness> <speed> for modes 5-6"
-  echo ""
-  echo "Analog stick RGB LED control for TrimUI Smart Pro."
-  echo ""
-  echo "Allowed values"
-  echo "  mode       0-6"
-  echo "             0: off"
-  echo "             1: static"
-  echo "             2: breath (fast)"
-  echo "             3: breath (medium)"
-  echo "             4: breath (slow)"
-  echo "             5: single rainbow (cyling through colors)"
-  echo "             6: multi rainbow (swirl)"
-  echo "  brightness 0-100"
-  echo "  red        0-255"
-  echo "  green      0-255"
-  echo "  blue       0-255"
-  echo ""
-}
-
-
 # Set daemon mode 1-4 (static, breathing (fast, medium, slow))
 # with the given brightness and color.
 setRGBBasedMode() {
@@ -239,7 +224,39 @@ setRGBBasedMode() {
   setHexColor $3 $4 $5
 
   # Turn on the given effect/brightness/color
-  startEffect
+  setColor
+
+}
+
+# Simple single rainbow animation
+singleRainbow() {
+
+  MODE=1
+  DELAY=$(echo "scale=3; 1/$2" | bc)
+
+  RAINBOW_COLORS=(
+    "255 0 0"     # Red
+    "255 127 0"   # Orange
+    "255 255 0"   # Yellow
+    "0 255 0"     # Green
+    "0 0 255"     # Blue
+    "75 0 130"    # Indigo
+    "148 0 211"   # Violet
+  )
+
+  SIZE=${#RAINBOW_COLORS[@]}
+  INDEX=0
+  LAST_INDEX=$((SIZE - 1))
+  while :; do
+    echo "Delay: $DELAY"
+    if [ $INDEX == $LAST_INDEX ]; then
+      INDEX=0
+    else
+      INDEX=$((INDEX + 1))
+    fi
+    setRGBBasedMode $MODE $1 ${RAINBOW_COLORS[INDEX]}
+    sleep $DELAY
+  done
 
 }
 
@@ -248,31 +265,74 @@ setRGBBasedMode() {
 # However, they allow to set a speed setting.
 setSpeedBasedMode() {
 
-  # TODO: Find a way to mimic $1=5 (single rainbow) and $=6 (multi rainbow)
-  # TODO: Find a way to apply $3 (speed, range 0-100)
-  echo "Speed-based modes (single rainbow, multi rainbow) are not supported, yet."
+  if [ $1 -eq $DAEMON_MODE_SINGLE_RAINBOW ]; then
+    singleRainbow $2 $3
+  elif [ $1 -eq $DAEMON_MODE_MULTI_RAINBOW ]; then
+    # TODO: Figure out a way to manually run multi rainbow mode
+    echo "Daemon mode 6 (Multi Rainbow) is not supported, yet. Using single rainbow instead."
+    singleRainbow $2 $3
+  else
+    stop
+    printInstructions
+  fi
 
+}
+
+startAnimation() {
+  if [ $# -eq 2 ] && [ "$1" == $DAEMON_MODE_ACHIEVEMENT ]; then
+    setSpeedBasedMode $DAEMON_MODE_SINGLE_RAINBOW $2 100
+  # Go to a speed-based mode
+  elif [ $# -eq 3 ] && [ $1 -gt 4 ]; then
+    setSpeedBasedMode $1 $2 $3
+  # Go to an RGB-based mode
+  elif [ $# -gt 4 ] && [ $1 -lt 5 ]; then
+    if [ $# -gt 5 ]; then # TODO: Extend daemon to support dedicated control of each available LED (left, right, center, f1, f2)
+      echo "Dedicated RGB values for the right stick are not supported, yet."
+    fi
+    setRGBBasedMode $1 $2 $3 $4 $5
+  # Invalid input
+  else
+    stop
+    printInstructions
+  fi
+}
+
+# Stops the daemon
+stop() {
+  kill $(cat $VAR_LED_ANIMATION_PID)
+  rm $VAR_LED_ANIMATION_PID
+  rgbOff
+  echo "Stopped analog stick animation daemon."
+}
+
+# Starts the daemon
+start() {
+  startAnimation $1 $2 $3 $4 $5 &
+  LED_PID=$!
+  echo $LED_PID > $VAR_LED_ANIMATION_PID
+  echo "Started analog stick RGB LED daemon."
+}
+
+
+restart() {
+  kill $(cat $VAR_LED_ANIMATION_PID)
+  rm $VAR_LED_ANIMATION_PID
+  startAnimation $1 $2 $3 $4 $5 &
+  LED_PID=$!
+  echo $LED_PID > $VAR_LED_ANIMATION_PID
+  echo "Started analog stick RGB LED daemon."
 }
 
 echo "Your call: $0 $1 $2 $3 $4 $5"
 
 # Disable LED and exit if at least one argument (mode) is given and mode is 0
-if [ $# -gt 0 ] && [ $1 -eq $DAEMON_MODE_OFF ]; then
-  disableLed
-  exit 1
-# Play an achievement effect
-elif [ $# -eq 2 ] && [ "$1" == $DAEMON_MODE_ACHIEVEMENT ]; then
-  setRGBBasedMode $1 $2 255 255 255
-# Go to a speed-based mode (not yet supported)
-elif [ $# -eq 3 ] && [ $1 -gt 4 ]; then
-  setSpeedBasedMode $1 $2 $3
-# Go to an RGB-based mode
-elif [ $# -gt 4 ] && [ $1 -lt 5 ]; then
-  if [ $# -gt 5 ]; then # TODO: Extend daemon to support dedicated control of each available LED (left, right, center, f1, f2)
-    echo "Dedicated RGB values for the right stick are not supported, yet."
+if [ $# -gt 0 ] && [ -n $1 ] && [ $1 -eq $DAEMON_MODE_OFF ]; then
+  if [ -f $VAR_LED_ANIMATION_PID ]; then
+    stop
   fi
-  setRGBBasedMode $1 $2 $3 $4 $5
-# Invalid input
+  exit 1
+elif [ -f $VAR_LED_ANIMATION_PID ]; then
+  restart $1 $2 $3 $4 $5
 else
-  printInstructions
+  start $1 $2 $3 $4 $5
 fi
