@@ -80,12 +80,12 @@ setMode() {
     MODE=$LED_MODE_STATIC # TODO: Check if this is the correct mode?
   elif [ $1 -eq $DAEMON_MODE_BREATHING_FAST ]; then
     echo "Daemon mode 2 (Breath (fast)) is not supported, yet. Using Breath (medium) instead"
-    MODE=$LED_MODE_SNIFF # TODO: Is it possible to modify breath speed?
+    MODE=$LED_MODE_BREATH # TODO: Is it possible to modify breath speed?
   elif [ $1 -eq $DAEMON_MODE_BREATHING_MEDIUM ]; then
     MODE=$LED_MODE_BREATH # TODO: Is it possible to modify breath speed?
   elif [ $1 -eq $DAEMON_MODE_BREATHING_SLOW ]; then
-    echo "Daemon mode 4 (Breath (slow)) is not supported, yet. Using Breath (slow) instead"
-    MODE=$LED_MODE_LINEAR # TODO: Is it possible to modify breath speed?
+    echo "Daemon mode 4 (Breath (slow)) is not supported, yet. Using Breath (medium) instead"
+    MODE=$LED_MODE_BREATH # TODO: Is it possible to modify breath speed?
   fi
 
 }
@@ -164,8 +164,6 @@ setColor() {
     echo $EFFECT_CYCLES_INFINITE_LOOP > /sys/class/led_anim/effect_cycles_f2
   fi
 
-  echo MODE $MODE
-
   #set mode of next effect
   echo $MODE > /sys/class/led_anim/effect_m
   echo $MODE > /sys/class/led_anim/effect_lr
@@ -209,17 +207,25 @@ setRGBBasedMode() {
 # Simple single rainbow animation
 singleRainbow() {
 
-  MODE=1
-  DELAY=$(echo "scale=3; 1/$2" | bc)
+  # Set MODE variable
+  setMode 1
 
+  # Set BRIGHTNESS variable
+  setBrightness $1
+
+  # Calculate delay between updates based on speed setting
+  DELAY=$(echo "scale=3; 1-1*$2/100" | bc)
+
+  # Colors have been pre-calculated with setHexColor
+  # to avoid unnecessary operations during loop. 
   RAINBOW_COLORS=(
-    "255 0 0"     # Red
-    "255 127 0"   # Orange
-    "255 255 0"   # Yellow
-    "0 255 0"     # Green
-    "0 0 255"     # Blue
-    "75 0 130"    # Indigo
-    "148 0 211"   # Violet
+    "3c0000" # red (255 0 0)
+    "3c1d00" # orange (255 127 0)
+    "3c3c00" # yellow (255 255 0)
+    "003c00" # green (0 255 0)
+    "00003c" # blue (0 0 255)
+    "11001e" # indigo (75 0 130)
+    "230031" # violet (148 0 211)
   )
 
   SIZE=${#RAINBOW_COLORS[@]}
@@ -231,10 +237,16 @@ singleRainbow() {
     else
       INDEX=$((INDEX + 1))
     fi
-    setRGBBasedMode $MODE $1 ${RAINBOW_COLORS[INDEX]}
+    
+    # Set COLOR variable
+    COLOR=${RAINBOW_COLORS[INDEX]}
+    
+    # Turn on the given effect/brightness/color
+    setColor
+
+    # Sleep until next color update
     sleep $DELAY
   done
-
 }
 
 # On the Anbernic RG40XXH/V and RGCube, rainbow modes
@@ -257,7 +269,7 @@ setSpeedBasedMode() {
 
 startAnimation() {
   if [ $# -eq 2 ] && [ "$1" == $DAEMON_MODE_ACHIEVEMENT ]; then
-    setSpeedBasedMode $DAEMON_MODE_SINGLE_RAINBOW $2 100
+    setSpeedBasedMode $DAEMON_MODE_SINGLE_RAINBOW $2 80
   # Go to a speed-based mode
   elif [ $# -eq 3 ] && [ $1 -gt 4 ]; then
     setSpeedBasedMode $1 $2 $3
