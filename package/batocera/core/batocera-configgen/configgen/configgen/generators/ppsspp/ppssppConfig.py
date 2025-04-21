@@ -82,18 +82,18 @@ def createPPSSPPConfig(iniConfig, system):
     iniConfig.set("Graphics", "FrameSkipType", "0") # Use number and not percent
     if system.isOptSet("frameskip") and not system.config["frameskip"] == "automatic":
         iniConfig.set("Graphics", "FrameSkip", str(system.config["frameskip"]))
-    elif system.isOptSet('rendering_mode') and system.getOptBoolean('rendering_mode') == False:
+    elif system.isOptSet('skip_buffer_effects') and system.getOptBoolean('skip_buffer_effects') == True:
         iniConfig.set("Graphics", "FrameSkip", "0")
     else:
         iniConfig.set("Graphics", "FrameSkip", "2")
 
     # Buffered rendering
-    if system.isOptSet('rendering_mode') and system.getOptBoolean('rendering_mode') == False:
-        iniConfig.set("Graphics", "RenderingMode", "0")
-        # Have to force autoframeskip off here otherwise PPSSPP sets rendering mode back to 1.
+    if system.isOptSet('skip_buffer_effects') and system.getOptBoolean('skip_buffer_effects') == True:
+        iniConfig.set("Graphics", "SkipBufferEffects", "True")
+        # Have to force autoframeskip off here.
         iniConfig.set("Graphics", "AutoFrameSkip", "False")
     else:
-        iniConfig.set("Graphics", "RenderingMode", "1")
+        iniConfig.set("Graphics", "SkipBufferEffects", "False")
         # Both internal resolution and auto frameskip are dependent on buffered rendering being on, only check these if the user is actually using buffered rendering.
         # Internal Resolution
         if system.isOptSet('internal_resolution'):

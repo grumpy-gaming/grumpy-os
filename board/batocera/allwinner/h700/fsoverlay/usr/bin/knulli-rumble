@@ -1,0 +1,19 @@
+#!/bin/bash
+
+RUMBLE_FILE="/sys/class/power_supply/axp2202-battery/moto"
+
+# We only want to run the script if the board has rumble capability
+if ! knulli-board-capability "rumble"; then
+    exit 1
+fi
+
+# Ensure correct number of arguments
+if [ $# -lt 1 ] || [ $(echo "$1 <= 0" | bc) -ne 0 ]; then
+  echo "Usage: $0 <duration>"
+  echo "Duration must be a positive integer or floating point number larger than 0."
+  exit 1
+fi
+
+echo 1 > "$RUMBLE_FILE" && sleep $1 && echo 0 > "$RUMBLE_FILE"
+
+exit 0

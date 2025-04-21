@@ -1,0 +1,44 @@
+#!/bin/bash
+# Suspend or shutdown
+
+POWER_BUTTON_STATE="/var/run/power-button-state.flag"
+LOCK_FILE="/var/run/power-button-script.lock"
+
+exec 200>"${LOCK_FILE}"
+flock -n 200 || exit 1
+
+# Threshold for long press to shutdown (in seconds) (some boards cut power when power button is held too long)
+LONG_PRESS_THRESHOLD=2
+
+wait_exit() {
+    sleep 2
+}
+
+suspend_system() {
+    pm-is-supported --suspend && pm-suspend
+    wait_exit
+}
+
+shutdown_system() {
+    batocera-brightness dispoff
+    amixer set Master mute
+    batocera-es-swissknife --emukill
+    knulli-shutdown -s
+}
+
+# Set starting state
+echo "1" > "$POWER_BUTTON_STATE"
+
+# Wait for modification of flag file
+inotifywait -qq -t "$LONG_PRESS_THRESHOLD" -e close_write "$POWER_BUTTON_STATE"
+    if [ "$(cat "$POWER_BUTTON_STATE")" = "0" ]; then
+        suspend_system
+    elif [ "$(cat "$POWER_BUTTON_STATE")" = "1" ]; then
+        if [ -f /usr/bin/knulli-rumble ]; then
+            knulli-rumble 0.1
+        fi
+        shutdown_system
+    fi
+
+flock -u 200
+exit 0

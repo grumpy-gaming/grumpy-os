@@ -5,17 +5,36 @@ if knulli-board-capability "analogstick"; then
     exit 1
 fi
 
-RUMBLE_FILE="/sys/class/power_supply/axp2202-battery/moto"
 DPAD_STATE_FILE="/sys/class/power_supply/axp2202-battery/nds_pwrkey"
 STATE=$(cat "$DPAD_STATE_FILE")
 
+check_ingame() {
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:1234/runningGame")
+    test $? != 0                 && return 0
+    test "${HTTP_STATUS}" != 201 && return 0 # in game
+    return 1  # 201 when not in game
+}
+
+do_notification() {
+    NOTIFICATION=$1
+    curl -s http://localhost:1234/notify -d "$NOTIFICATION" >/dev/null
+}
+
 if [ "${STATE}" -eq 0 ]; then
-    echo 1 > "$RUMBLE_FILE" && sleep 0.1 && echo 0 > "$RUMBLE_FILE"
+    if ! check_ingame; then
+        do_notification "Virtual Joystick ON"
+    fi
+
+    knulli-rumble 0.1
     echo 2 > "$DPAD_STATE_FILE"
 else
-    echo 1 > "$RUMBLE_FILE" && sleep 0.1 && echo 0 > "$RUMBLE_FILE"
+    if ! check_ingame; then
+        do_notification "Virtual Joystick OFF"
+    fi
+
+    knulli-rumble 0.1
     sleep 0.2
-    echo 1 > "$RUMBLE_FILE" && sleep 0.1 && echo 0 > "$RUMBLE_FILE"
+    knulli-rumble 0.1
     echo 0 > "$DPAD_STATE_FILE"
 fi
 

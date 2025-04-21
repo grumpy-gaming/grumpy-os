@@ -1836,7 +1836,7 @@ libretro:
                     "4":           4
             fbneo-hhtate:
                 prompt: HANDHELD TATE MODE
-                description: Rotates the display and remaps inputs for device to be used sideways.
+                description: Rotates the display and remaps inputs for compatible devices to be used sideways.
                 choices:
                     "Off":    "False"
                     "On":     "True"
@@ -2889,7 +2889,7 @@ libretro:
                     "Rotated 4-Way Stick (Q*Bert)": "qbert"
             mame-hhtate:
                 prompt: HANDHELD TATE MODE
-                description: Rotates the display and remaps inputs for device to be used sideways.
+                description: Rotates the display and remaps inputs for compatible devices to be used sideways.
                 choices:
                     "Off":    "False"
                     "On":     "True"
@@ -9133,13 +9133,13 @@ ppsspp:
             choices:
                 "OpenGL": 0 (OPENGL)
                 "Vulkan": 3 (VULKAN)
-        rendering_mode:
+        skip_buffer_effects:
             group: ADVANCED OPTIONS
-            prompt: RENDERING MODE
-            description: Skip buffer disables auto frameskip and renders at display output resolution.
+            prompt: SKIP BUFFER EFFECTS
+            description: Skip buffer effects disables auto frameskip and renders at display output resolution.
             choices:
-                "Skip buffer effects": 0
-                "Buffered rendering":  1
+                "Buffered rendering":  false
+                "Skip buffer effects": true
         internal_resolution:
             prompt: RENDERING RESOLUTION
             description: Enhancement. Increase the rendering resolution. Makes 3D objects clearer.
@@ -12099,6 +12099,11 @@ demul:
 sh:
   features: [padtokeyboard]
   shared: [powermode, tdp, videomode, bezel, bezel_stretch, hud, hud_corner, bezel.tattoo, bezel.tattoo_corner, bezel.tattoo_file, bezel.resize_tattoo]
+  cfeatures:
+        xbox_layout:
+            prompt: SWITCH A/B and X/Y
+            description: Adjusts face buttons to match Xbox controller button labels.
+            preset: switchauto
 
 xenia:
   features: []

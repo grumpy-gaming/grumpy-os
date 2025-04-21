@@ -103,11 +103,19 @@ if grep -qE '^[ ]*autoresize[ ]*=[ ]*true[ ]*$' "${BOOTCONF}"; then
     TABLETYPE=$(parted -s ${DISK} print | grep 'Partition Table' | awk '{print $3}')
     echo "Disk partition table type = $TABLETYPE" >> "$LOG"
 
-    # only for ext4
-    PARTTYPE=$(blkid "${PART}" | sed -e s+'^.* TYPE="\([^"]*\)\".*'+'\1'+)
-    test "${PARTTYPE}" != "ext4" && exit 0
+#    # only for ext4
+#    PARTTYPE=$(blkid "${PART}" | sed -e s+'^.* TYPE="\([^"]*\)\".*'+'\1'+)
+#    test "${PARTTYPE}" != "ext4" && exit 0
+#    echo "Partition type = ${PARTTYPE}" >> "$LOG"
+
+    # only for ext4 or vfat
+    PARTTYPE=$(blkid -o value -s TYPE "${PART}")
+    if [ "${PARTTYPE}" != "ext4" ] && [ "${PARTTYPE}" != "vfat" ]; then
+       echo " -> skipping resize: unsupported fs type '${PARTTYPE}'" >> "$LOG"
+       exit 0
+    fi
     echo "Partition type = ${PARTTYPE}" >> "$LOG"
-    
+
     # textoutput "Message" "percentage" "command call" 
     for i in 1 3 5 7 9 11 13; do
     case $i in
@@ -133,23 +141,40 @@ if grep -qE '^[ ]*autoresize[ ]*=[ ]*true[ ]*$' "${BOOTCONF}"; then
             textoutput $i 40 "partprobe ${DISK}"
             ;;
         7)
-            if test "${PARTTYPE}" = "ext4" && "$FORMAT_ALLOWED" = true
-            then
-                echo "Step $i: Formatting the ext4 file system" >> "$LOG"
+#            if test "${PARTTYPE}" = "ext4" && "$FORMAT_ALLOWED" = true
+#            then
+#                echo "Step $i: Formatting the ext4 file system" >> "$LOG"
+#                textoutput $i 60 "mkfs.ext4 -L SHARE -q -F -F ${PART}"
+#            else
+#                echo "Step $i: Skipping formatting due to partition size or type" >> "$LOG"
+#                textoutput $i 60 "echo 'Formatting skipped'"
+#            fi
+            if [ "${PARTTYPE}" = "ext4" ] && [ "$FORMAT_ALLOWED" = true ]; then
+                echo "Step $i: Formatting ext4" >> "$LOG"
                 textoutput $i 60 "mkfs.ext4 -L SHARE -q -F -F ${PART}"
             else
-                echo "Step $i: Skipping formatting due to partition size or type" >> "$LOG"
+                echo "Step $i: Skipping filesystem create (type=${PARTTYPE})" >> "$LOG"
                 textoutput $i 60 "echo 'Formatting skipped'"
             fi
-            ;;
+	    ;;
         9)
-            # check & resize the ext4 file system
-            if test "${PARTTYPE}" = "ext4"
-            then
-                echo "Step $i: Checking ext4 file system" >> "$LOG"
-                textoutput $i 70 "e2fsck -f -p ${PART}"
-            fi
-            ;;
+#            # check & resize the ext4 file system
+#            if test "${PARTTYPE}" = "ext4"
+#            then
+#                echo "Step $i: Checking ext4 file system" >> "$LOG"
+#                textoutput $i 70 "e2fsck -f -p ${PART}"
+#            fi
+             if [ "${PARTTYPE}" = "ext4" ]; then
+                 echo "Step $i: Checking ext4" >> "$LOG"
+                 textoutput $i 70 "e2fsck -f -p ${PART}"
+             elif [ "${PARTTYPE}" = "vfat" ]; then
+                 echo "Step $i: Checking vfat" >> "$LOG"
+                 textoutput $i 70 "fsck.vfat -a ${PART}"
+                 echo "Step $i: Resizing vfat to fill partition" >> "$LOG"
+                 textoutput 1 10 "mkfs.exfat -n SHARE ${PART}" # what to do in case of error ? nothing.
+                 echo -e 't\n4\n0700\nw\nY\n' | gdisk ${DISK}
+	     fi
+	     ;;
         11)
             # finally disk sync
             echo "Step $i: Final sync" >> "$LOG"

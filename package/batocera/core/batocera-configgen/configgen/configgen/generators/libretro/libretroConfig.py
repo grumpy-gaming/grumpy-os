@@ -595,7 +595,7 @@ def createLibretroConfig(generator: Generator, system: Emulator, controllers: Co
 
     ## TATE mode remap for handhelds
     if system.config['core'] in ['fbneo', 'mame', 'mame078plus']:
-        
+
         def is_hdmi_active():
             state = "/sys/devices/platform/soc/6000000.hdmi/extcon/hdmi/state"
             if not os.path.exists(state):
@@ -606,7 +606,7 @@ def createLibretroConfig(generator: Generator, system: Emulator, controllers: Co
                     return True
                 else:
                     return False
-        
+
         def check_vertical(path, rom):
             rom_id = os.path.splitext(os.path.basename(rom))[0]
             tree = ET.parse(path)
@@ -616,7 +616,7 @@ def createLibretroConfig(generator: Generator, system: Emulator, controllers: Co
                 return True
             else:
                 return False
-        
+
         def update_handheld_config(name):
             if name in handhelds:
                 settings = handhelds[name]
@@ -628,13 +628,13 @@ def createLibretroConfig(generator: Generator, system: Emulator, controllers: Co
                 # remap inputs
                 for btn, value in settings['remap'].items():
                     retroarchConfig[f'input_player1_{btn}'] = value
-        
+
         common_remap = {
             'stk_r_x+': '18', 'stk_r_x-': '19', 'stk_r_y+': '17', 'stk_r_y-': '16',
             'btn_down': '6', 'btn_left': '4', 'btn_right': '5', 'btn_up': '7',
             'btn_a': '0', 'btn_b': '1', 'btn_x': '8', 'btn_y': '-1'
         }
-        
+
         handhelds = {
             'Anbernic RG35XX-PLUS Controller': {  # rg35xx-plus
                 'rotation': 'left', 'remap': common_remap
@@ -653,11 +653,19 @@ def createLibretroConfig(generator: Generator, system: Emulator, controllers: Co
                     'btn_r2': '3', 'btn_a': '-1', 'btn_b': '-1', 'btn_x': '-1', 'btn_y': '-1',
                 }
             },
+            'Anbernic RG34XX Controller': {  # rg34xx
+                'rotation': 'right',
+                'remap': {
+                    'btn_down': '7', 'btn_left': '5', 'btn_right': '4', 'btn_up': '6',
+                    'btn_start': '0', 'btn_select': '8', 'btn_l2': '2', 'btn_r': '3',
+                    'btn_r2': '1', 'btn_a': '-1', 'btn_b': '-1', 'btn_x': '-1', 'btn_y': '-1',
+                }
+            },
             'TRIMUI Player1': {  # trimui-smartpro
                 'rotation': 'left', 'remap': common_remap
             },
         }
-        
+
         if system.isOptSet(f"{systemCore}-hhtate") and system.config[f"{systemCore}-hhtate"] == "True":
             db_path = "/usr/share/emulationstation/resources/arcaderoms.xml"
             controller, pad = sorted(controllers.items())[0]
@@ -668,7 +676,7 @@ def createLibretroConfig(generator: Generator, system: Emulator, controllers: Co
                 retroarchConfig['video_rotation'] = '0'
         else:
             retroarchConfig['video_rotation'] = '0'
-            
+
     ## PORTS
     ## Quake
     if (system.config['core'] == 'tyrquake'):
@@ -1360,7 +1368,7 @@ def writeBezelConfig(generator: Generator, bezel: str | None, shaderBezel: bool,
         infos["messagey"] = 0.0
 
     retroarchConfig['input_overlay_opacity'] = infos["opacity"]
-    
+
     # Set video viewport bias for viewport positioning
     retroarchConfig['video_viewport_bias_x']  = 0.000000
     retroarchConfig['video_viewport_bias_y']  = 1.000000

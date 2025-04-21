@@ -99,6 +99,12 @@ case "$1" in
         start-stop-daemon -K -q -p /var/run/bluetoothd.pid
         killall hciattach >/dev/null 2>&1
         killall hciattach_opi >/dev/null 2>&1
+        killall rtk_hciattach >/dev/null 2>&1
+
+        echo 0 > /sys/class/rfkill/rfkill0/state
+        sleep 1
+        echo 1 > /sys/class/rfkill/rfkill0/state
+
         batocera-bluetooth save
     ;;
 
