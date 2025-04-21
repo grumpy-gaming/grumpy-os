@@ -214,7 +214,9 @@ singleRainbow() {
   setBrightness $1
 
   # Calculate delay between updates based on speed setting
-  DELAY=$(echo "scale=3; 1-1*$2/100" | bc)
+  # (Using 1.05 as baseline to avoid delay getting below 0.05
+  # and thereby avoiding CPU usage of more than 10%)
+  DELAY=$(echo "scale=3; 1.05-1*$2/100" | bc)
 
   # Colors have been pre-calculated with setHexColor
   # to avoid unnecessary operations during loop. 
