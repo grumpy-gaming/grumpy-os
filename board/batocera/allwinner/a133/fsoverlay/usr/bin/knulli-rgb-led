@@ -94,18 +94,14 @@ setMode() {
 setBrightness() {
 
   BRIGHTNESS_DEC=$1
-  echo BRIGHTNESS_DEC $BRIGHTNESS_DEC
   
   # The TSP has an integer range of 0-60
   # So we need to do some math first:
   # Divide by 100 and mulitply by 60
   BRIGHTNESS_TSP_FLOAT=$(echo "scale=2; $BRIGHTNESS_DEC/100*$MAX_INTEGER" | bc)
 
-  echo BRIGHTNESS_TSP_FLOAT $BRIGHTNESS_TSP_FLOAT
-
   # Round it to get applicable brightness
   BRIGHTNESS="$(printf '%.0f' ${BRIGHTNESS_TSP_FLOAT})"
-  echo BRIGHTNESS $BRIGHTNESS
 
 }
 
@@ -116,10 +112,6 @@ setHexColor() {
   G_DEC=$2
   B_DEC=$3
   
-  echo R_DEC $R_DEC
-  echo G_DEC $G_DEC
-  echo B_DEC $B_DEC
-
   # The TSP has an integer range of 0-60
   # So we need to do some math first:
   # Divide by 255 and mulitply by 60
@@ -128,30 +120,16 @@ setHexColor() {
   B_TSP_FLOAT=$(echo "scale=2; $B_DEC/255*$MAX_INTEGER" | bc)
 
   
-  echo R_TSP_FLOAT $R_TSP_FLOAT
-  echo G_TSP_FLOAT $G_TSP_FLOAT
-  echo B_TSP_FLOAT $B_TSP_FLOAT
-
   R_TSP="$(printf '%.0f' ${R_TSP_FLOAT})"
   G_TSP="$(printf '%.0f' ${G_TSP_FLOAT})"
   B_TSP="$(printf '%.0f' ${B_TSP_FLOAT})"
 
-  echo R_TSP $R_TSP
-  echo G_TSP $G_TSP
-  echo B_TSP $B_TSP
-
   R_HEX="$(printf '%02x' $R_TSP)"
   G_HEX="$(printf '%02x' $G_TSP)"
   B_HEX="$(printf '%02x' $B_TSP)"
-  
-  echo R_HEX $R_HEX
-  echo G_HEX $G_HEX
-  echo B_HEX $B_HEX
 
   COLOR="$R_HEX$G_HEX$B_HEX"
   
-  echo TSPColor $COLOR
-
 }
 
 # Disables the LED by simply turning brightness to 0
