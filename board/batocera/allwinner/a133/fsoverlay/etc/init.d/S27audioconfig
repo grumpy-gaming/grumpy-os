@@ -106,8 +106,6 @@ restart() {
 case "$1" in
  	start)
 		start_audioconfig
-		amixer -c 0 sset HpSpeaker on
-		amixer -c 0 sset Headphone "$(batocera-settings-get audio.headphone || echo 0)"
 	;;
  	stop)
 		stop_audioconfig

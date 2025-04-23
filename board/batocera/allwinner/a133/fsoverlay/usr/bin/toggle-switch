@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MUTE_STATE="/var/run/toggle-switch-mute"
+
 BOARD="$(cat /boot/boot/batocera.board)"
 if [ "$BOARD" != "trimui-brick" ] && [ "$BOARD" != "trimui-smart-pro" ]; then
     exit 1
@@ -17,6 +19,7 @@ case "$ACTION" in
         case "$MODE" in
             mute)
                 /usr/bin/batocera-audio setSystemVolume mute
+                touch "$MUTE_STATE"
                 ;;
             rgboff)
                 /usr/bin/batocera-settings-set led.mode 0
@@ -29,6 +32,7 @@ case "$ACTION" in
     disable)
         case "$MODE" in
             mute)
+                rm "$MUTE_STATE"
                 /usr/bin/batocera-audio setSystemVolume unmute
                 ;;
             rgboff)

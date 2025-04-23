@@ -192,21 +192,16 @@ class Controller:
             if controller:
                 controller_list.append(controller)
 
-        # If there's more than one controller, assume the first is internal and remove it
+        # If there's more than one controller safe to assume the first is internal and remove it
         if len(controller_list) > 1:
-            controller_list = [ctrl for ctrl in controller_list if not is_internal(ctrl)]
+            controller_list.pop(0)
 
         # Reassign player numbers
         controllers: ControllerDict = {}
         for i, ctrl in enumerate(controller_list[:max_players], start=1):
             ctrl.player_number = i
             controllers[i] = ctrl
-        def is_internal(ctrl):
-            # If user already set this as player 1, respect it
-            if ctrl.player_number == 1:
-                return False
-                        # Fallback to path-based detection
-            return is_internal_phys(ctrl.device_path)
+
         return controllers
 
     @classmethod

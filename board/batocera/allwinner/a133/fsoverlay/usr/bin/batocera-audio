@@ -137,6 +137,10 @@ case "${ACTION}" in
                 LANG=C pactl set-sink-mute @DEFAULT_SINK@ 1 || exit 1
                 ;;
             "unmute")
+                if [ -f /var/run/toggle-switch-mute ]; then # This is a workaround to a quirk of the a133 (unmutes automatically when switching audio ouput)
+                    echo "Mute toggle switch is active, blocking unmute" >/dev/null 2>&1
+                    exit 0
+                fi
                 LANG=C pactl set-sink-mute @DEFAULT_SINK@ 0 || exit 1
                 ;;
             "mute-toggle")
