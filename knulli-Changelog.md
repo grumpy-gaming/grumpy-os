@@ -15,9 +15,17 @@
         - USB Settings: Toggle between ADB, MTP, and no USB access
         - Pico-8 installer can be launched from Device Settings
     - Introduced automatic assignment of controllers to players (in order of connecting the controllers)
+    - Automatically switches between Bluetooth audio and built-in speaker output when devices connect/disconnect
 - Emulation features
     - Introduced ScummVM auto-detection
     - Introduced a toggle to the Ports system which purposely breaks cardinal mapping by swapping A/B and X/Y to match the Nintendo-style button labels with in-game prompts for Xbox controllers
+    - Added DATE and TIME display to the EmulationStation screensaver
+    - Added Korean input support to the EmulationStation on-screen popup keyboard
+    - Netplay improvements
+        - Added support for local hotspot (Adhoc) connectivity in EmulationStation Netplay
+        - Added support for LAN game discovery in EmulationStation Netplay
+        - EmulationStation setting for automatically creating a Netplay lobby on game start
+        - EmulationStation setting to filter Netplay lobby results to relay server games only
 
 ### FIXED ###
 
@@ -29,6 +37,8 @@
 - Adapted bezel positioning via configgen to new requirements of RetroArch 1.20.x
 - Battery saving no longer interrupts MPV (the video player)
 - Fixed issues with auto-pairing and re-connecting of Bluetooth controllers
+- Fixed cursor movement bug in the popup keyboard
+- Fixed EmulationStation rendering issue with the Korean character '가'
 
 ### CHANGED / IMPROVED
 - OS features
@@ -38,6 +48,7 @@
 - Emulation features
     - Updated RetroArch to 1.20.x
     - Updated ScummVM to 2.9.0
+    - Replaced default Korean font: NanumMyeongjo → NanumSquare_acB
 
 # Knulli - Firefly - (20241204)
 
