@@ -11,16 +11,23 @@
         - RGB Settings: Moved to Device Settings
         - RGB Settings: Battery indication can now be configured
         - Power Management: Moved to Device Settings
-        - Power Management: New options added, introduced aggressive battery saver
-        - USB Settings: Toggle between ADB, MTP, and no USB access
-        - Pico-8 installer can be launched from Device Settings
+        - Power Management: New options added
+        - Power Management: Added new aggressive battery saver
+        - USB Settings: Toggle between ADB, the newly introduced MTP, and no USB access
+        - Pico-8 Installer: Can now be launched from Device Settings
+        - Pico-8 Installer: Removes previous Pico-8 installation automatically now
+        - Added support for TrimUI switch input (can be configured in Device Settings to mute/unmute or turn RGB on/off or turn airplane mode on/off)
     - Introduced automatic assignment of controllers to players (in order of connecting the controllers)
     - Automatically switches between Bluetooth audio and built-in speaker output when devices connect/disconnect
-- Emulation features
-    - Introduced ScummVM auto-detection
-    - Introduced a toggle to the Ports system which purposely breaks cardinal mapping by swapping A/B and X/Y to match the Nintendo-style button labels with in-game prompts for Xbox controllers
-    - Added DATE and TIME display to the EmulationStation screensaver
+    - Added date and time display to the EmulationStation screensaver
     - Added Korean input support to the EmulationStation on-screen popup keyboard
+    - Applied 60 Hz patches for RG35XX SP, RG34XX, and RG CubeXX (thank you, @TheGammaSqueeze)
+    - Added single rainbow RGB mode to TrimUI Brick and Smart Pro
+    - Added MPV video player
+- Emulation features
+    - Introduced Quick Resume mode to boot right back into your game
+    - Introduced a toggle to the Ports system which purposely breaks cardinal mapping by swapping A/B and X/Y to match the Nintendo-style button labels with in-game prompts for Xbox controllers
+    - Introduced tate mode to RG34XX
     - Netplay improvements
         - Added support for local hotspot (Adhoc) connectivity in EmulationStation Netplay
         - Added support for LAN game discovery in EmulationStation Netplay
@@ -42,13 +49,17 @@
 
 ### CHANGED / IMPROVED
 - OS features
-    - Default file system is exFAT now
+    - Default file system is exFAT now (will only be applied when flashing)
+    - Consolidated resizing/formatting scripts across various SOCs
     - RGB daemon must no longer be enabled as a service
-    - Improved stability and consistency of Wi-Fi
+    - Improved stability and consistency of Wi-Fi (e.g., by adding `connman` delay and increasing timeout limit)
+    - Improved EmulationStation launch speed by limiting recursive depth of game to 1
+    - Added per-system toggle to lift the recursive depth limit if required
 - Emulation features
     - Updated RetroArch to 1.20.x
     - Updated ScummVM to 2.9.0
     - Replaced default Korean font: NanumMyeongjo → NanumSquare_acB
+    - Replaced Drastic-Steward with Advanced Drastic
 
 # Knulli - Firefly - (20241204)
 
