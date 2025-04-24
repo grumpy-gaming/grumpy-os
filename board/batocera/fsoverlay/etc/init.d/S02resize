@@ -78,18 +78,18 @@ function format_internal() {
 	case "${FORMAT_INTERNAL_TYPE}" in
 	    "ext4")
             textoutput 1 10 "mkfs.ext4 -L SHARE -q -F -F ${PART}" # what to do in case of error ? nothing.
-            echo -e 't\n4\n8300\nw\nY\n' | gdisk ${DISK}
+            echo -e "t\n${PARTNUM}\n8300\nw\nY\n" | gdisk ${DISK}
 		    ;;
 	    "exfat")
             textoutput 1 10 "mkfs.exfat -n SHARE ${PART}" # what to do in case of error ? nothing.
-            echo -e 't\n4\n0700\nw\nY\n' | gdisk ${DISK}
+            echo -e "t\n#{PARTNUM}\n0700\nw\nY\n" | gdisk ${DISK}
 		    ;;
 	    *)
 		# do nothing
 	esac
 
-	# Allwinner H700
-	echo -e 'r\nb\nc\nY\nw\nY\n' | gdisk ${DISK}
+	# Allwinner H700 & A133
+	echo -e "r\nb\nc\nY\nw\nY\n" | gdisk ${DISK}
 	partprobe ${DISK}
 }
 
@@ -165,7 +165,7 @@ if grep -qE '^[ ]*autoresize[ ]*=[ ]*true[ ]*$' "${BOOTCONF}"; then
         fsck.vfat -a ${PART}
         echo "Step $i: Resizing vfat to fill partition" >> "$LOG"
         mkfs.exfat -n SHARE ${PART} # what to do in case of error ? nothing.
-        echo -e 't\n4\n0700\nw\nY\n' | gdisk ${DISK}
+        echo -e "t\n${PARTNUM}\n0700\nw\nY\n" | gdisk ${DISK}
     fi
     
     # finally disk sync
