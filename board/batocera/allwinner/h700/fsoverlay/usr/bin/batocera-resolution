@@ -85,7 +85,7 @@ case "${ACTION}" in
         fi
         ;;
     "currentResolution")
-        if [ "BOARD" = "rg28xx" ]; then	
+        if [ "$BOARD" = "rg28xx" ]; then	
             fbset | grep "geometry" | awk '{print $3"x"$2}'
         else
             fbset | grep "geometry" | awk '{print $2"x"$3}'
