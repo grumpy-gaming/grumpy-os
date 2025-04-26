@@ -19,48 +19,11 @@ remove_trigger() {
     mount -o remount,ro /boot
 }
 
-# UI Output with dialog, default colorset
-function dialogoutput() {
-    local percent="$1"
-    local text="Do not switch off your device!"
-
-    dialog --backtitle "KNULLI" --title " Resizing & Formatting Partition " \
-           --mixedgauge "$text" 18 50 "$percent" "${arr[@]}" &>/dev/tty1
-}
-
-# Display error with timeout
-function display_error() {
-    dialog --title "Resize Error" --timeout 10 --msgbox "\nPlease check the resize log at: /tmp/resize.log" 6 60 &>/dev/tty1
-    exit 1
-}
-
 # Partition size calculation
 get_partition_size_mb() {
     local partition="$1"
     local size_kb=$(blockdev --getsize64 "$partition")
     echo $((size_kb / 1024 / 1024))
-}
-
-# Executing parameters and watch background pid
-# Changes text messages parsed to dialog --mixedgauge
-function textoutput()
-{
-    local cmd="$3"
-    local percent="$2"
-    local pid ret
-    echo "cmd:$cmd" >> "$LOG"
-    $cmd >> "$LOG" 2>&1 &
-    pid=$!
-    arr[$1]=7 #msg: In Progress
-    dialogoutput "$percent"
-    wait $pid
-    ret=$?
-    echo "cmd code:$ret" >> "$LOG"
-    arr[$1]=$ret #msg: Depends from return value
-    if [ $ret -ne 0 ]; then
-        display_error
-    fi
-    return $ret
 }
 
 function format_internal() {
@@ -75,22 +38,22 @@ function format_internal() {
     DISK=$(batocera-part prefix "${PART}")
     echo "Disk = $DISK" >> "$LOG"
 
-	case "${FORMAT_INTERNAL_TYPE}" in
+    case "${FORMAT_INTERNAL_TYPE}" in
 	    "ext4")
-            textoutput 1 10 "mkfs.ext4 -L SHARE -q -F -F ${PART}" # what to do in case of error ? nothing.
+            mkfs.ext4 -L SHARE -q -F -F ${PART} # what to do in case of error ? nothing.
             echo -e "t\n${PARTNUM}\n8300\nw\nY\n" | gdisk ${DISK}
 		    ;;
 	    "exfat")
-            textoutput 1 10 "mkfs.exfat -n SHARE ${PART}" # what to do in case of error ? nothing.
+            mkfs.exfat -n SHARE ${PART} # what to do in case of error ? nothing.
             echo -e "t\n#{PARTNUM}\n0700\nw\nY\n" | gdisk ${DISK}
 		    ;;
 	    *)
 		# do nothing
-	esac
+    esac
 
-	# Allwinner H700 & A133
-	echo -e "r\nb\nc\nY\nw\nY\n" | gdisk ${DISK}
-	partprobe ${DISK}
+    # Allwinner H700 & A133
+    echo -e "r\nb\nc\nY\nw\nY\n" | gdisk ${DISK}
+    partprobe ${DISK}
 }
 
 # only when resizing is wanted
@@ -185,14 +148,12 @@ if grep -qE '^[ ]*autoresize[ ]*=[ ]*true[ ]*$' "${BOOTCONF}"; then
     
 else
     ###### format internal share #####
-	# remove the trigger
-	mount -o remount,rw /boot && sed -i -e s+'^[ ]*format-internal'+'#format-internal'+ "${BOOTCONF}" && mount -o remount,ro /boot
 
     # Format internal share
     format_internal
+    
+    # remove the trigger
+    mount -o remount,rw /boot && sed -i -e s+'^[ ]*format-internal'+'#format-internal'+ "${BOOTCONF}" && mount -o remount,ro /boot
 fi
 
-#Cleanup, restore screen, set progress of last item to 100%
-dialogoutput 100
-clear > /dev/tty1
 exit 0
