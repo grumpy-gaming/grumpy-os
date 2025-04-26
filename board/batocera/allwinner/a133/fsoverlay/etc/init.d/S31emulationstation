@@ -1,5 +1,6 @@
 #!/bin/sh
 BOOTCONF="/boot/batocera-boot.conf"
+REBOOT_FLAG="/var/run/emulationstation-standalone"
 
 . /etc/profile.d/xdg.sh
 . /etc/profile.d/dbus.sh
@@ -31,27 +32,27 @@ case "$1" in
         ;;
 
     stop)
-        emulationstation-standalone --stop-rebooting
+        rm -f "${REBOOT_FLAG}"
+        killall emulationstation 2>/dev/null
         killall openbox   2>/dev/null # for xorg
         killall sway      2>/dev/null # for wayland
-        killall emulationstation 2>/dev/null
         killall touchegg 2>/dev/null
-        if [ $? -eq 0 ]; then
-            sleep 20 &
-            watchdog=$!
-            while ! [ -z $(pidof emulationstation) ]; do
-                sleep 0.25
-                $(kill -0 $watchdog) || exit
-            done
-            kill -9 $watchdog
-        fi
+
+        # Wait up to 20 seconds before force killing
+        timeout=80
+        while pidof emulationstation > /dev/null; do
+            sleep 0.25
+            timeout=$((timeout - 1))
+            if [ "$timeout" -le 0 ]; then
+                echo "EmulationStation did not stop, force killing..."
+                pkill -9 -f emulationstation
+                break
+            fi
+        done
         ;;
 
     restart|reload)
         "$0" stop
-        while pidof emulationstation > /dev/null; do
-            sleep 0.1  # Wait until emulationstation is fully stopped
-        done
         "$0" start
         ;;
 
