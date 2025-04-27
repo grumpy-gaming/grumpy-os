@@ -47,6 +47,31 @@ class Advanced_DrasticGenerator(Generator):
                 os.system("cp -rv /usr/share/advanced_drastic/devices/" + board + "/* /userdata/system/configs/advanced_drastic")
             os.system("cp /boot/boot/batocera.board /userdata/system/configs/advanced_drastic")
 
+        # User Settings
+        settings_to_update = {}
+
+        if system.isOptSet("adv_drastic_hires") and system.getOptBoolean('adv_drastic_hires') == True:
+            settings_to_update["hires_3d"] = "1"
+        else:
+            settings_to_update["hires_3d"] = "0"
+
+        if system.isOptSet("adv_drastic_threaded") and system.getOptBoolean('adv_drastic_threaded') == True:
+            settings_to_update["threaded_3d"] = "1"
+        else:
+            settings_to_update["threaded_3d"] = "0"
+
+        if system.isOptSet("adv_drastic_frameskip_type") and system.getOptBoolean('adv_drastic_frameskip_type') == True:
+            settings_to_update["frameskip_type"] = "1"
+        else:
+            settings_to_update["frameskip_type"] = "0"
+
+        if system.isOptSet("adv_drastic_frameskip_value"):
+            settings_to_update["frameskip_value"] = str(system.config["adv_drastic_frameskip_value"])
+
+        # Only apply if there are changes detected
+        if settings_to_update:
+            configureSettings(settings_to_update, advanced_drastic_conf)
+
         os.chdir(advanced_drastic_root)
         commandArray = [advanced_drastic_bin, rom]
         return Command.Command(
@@ -57,3 +82,25 @@ class Advanced_DrasticGenerator(Generator):
                 'SDL_GAMECONTROLLERCONFIG': generate_sdl_game_controller_config(playersControllers)
             })
 
+def configureSettings(settings_to_update: dict, config_path: str):
+    if not os.path.isfile(config_path):
+        return
+
+    with open(config_path, "r") as file:
+        lines = file.readlines()
+
+    with open(config_path, "w") as file:
+        for line in lines:
+            stripped = line.strip()
+            if "=" in stripped:
+                key, value = map(str.strip, stripped.split("=", 1))
+                if key in settings_to_update:
+                    new_value = settings_to_update[key]
+                    if value != new_value:
+                        file.write(f"{key} = {new_value}\n")
+                    else:
+                        file.write(line)
+                else:
+                    file.write(line)
+            else:
+                file.write(line)
