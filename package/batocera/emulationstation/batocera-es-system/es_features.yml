@@ -11347,7 +11347,33 @@ drastic:
                 "Single": 3
 
 advanced_drastic:
-  shared: []
+  shared: [powermode, tdp, videomode, bezel, bezel_stretch, hud, hud_corner, bezel.tattoo, bezel.tattoo_corner, bezel.tattoo_file, bezel.resize_tattoo]
+  cfeatures:
+        adv_drastic_hires:
+            prompt:      ENHANCED RENDERING RESOLUTION
+            description: Enhancement. Double the rendering resolution. Makes 3D objects clearer.
+            preset: switchauto
+        adv_drastic_threaded:
+            prompt:      THREADED 3D
+            description: Improves performance in 3D games. Can cause glitches.
+            preset: switchauto
+        adv_drastic_frameskip_type:
+            prompt:      ENABLE FRAMESKIP
+            description: Skip frames to improve performance, at the cost of choppy motion. Can cause visual glitches.
+            preset: switchauto
+        adv_drastic_frameskip_value:
+            prompt:      FRAMESKIP VALUE
+            description: When frameskip type is on automatic or manual, skip up to this many frames consecutively.
+            choices:
+                "1": 1
+                "2": 2
+                "3": 3
+                "4": 4
+                "5": 5
+                "6": 6
+                "7": 7
+                "8": 8
+                "9": 9
 
 xemu:
   shared: [powermode, tdp, videomode, bezel, bezel_stretch, hud, hud_corner, bezel.tattoo, bezel.tattoo_corner, bezel.tattoo_file, bezel.resize_tattoo]

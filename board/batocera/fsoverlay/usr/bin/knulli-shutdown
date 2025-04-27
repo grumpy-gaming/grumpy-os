@@ -3,6 +3,13 @@
 SHUTDOWN_FLAG="/var/run/shutdown.flag"
 REBOOT_FLAG="/boot/restart.flag"
 
+check_ingame() {
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:1234/runningGame")
+    test $? != 0                 && return 0
+    test "${HTTP_STATUS}" != 201 && return 0 # in game
+    return 1  # 201 when not in game
+}
+
 do_poweroff() {
     POWEROFF=$1
 
@@ -11,6 +18,10 @@ do_poweroff() {
     # Lets hide what happens from the user during shutdown/reboot to make for a more seemless experience
     batocera-brightness dispoff
     amixer set Master mute
+
+    if check_ingame; then
+         batocera-es-swissknife --emukill
+    fi
 
     if [ "$POWEROFF" = "reboot" ]; then
         mount -o remount,rw /boot
