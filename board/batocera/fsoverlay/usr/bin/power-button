@@ -20,9 +20,6 @@ suspend_system() {
 }
 
 shutdown_system() {
-    batocera-brightness dispoff
-    amixer set Master mute
-    batocera-es-swissknife --emukill
     knulli-shutdown -s
 }
 
