@@ -2,6 +2,7 @@
 
 DISPLAY="/sys/kernel/debug/dispdbg"
 HDMI_STATE="/sys/devices/platform/soc/6000000.hdmi/extcon/hdmi/state"
+BOARD=$(cat /boot/boot/batocera.board)
 
 f_usage() {
     echo "$0 listOutputs" >&2
@@ -45,7 +46,6 @@ set_output() {
             fi
             ;;
         internal)
-            BOARD=$(cat /boot/boot/batocera.board)
             echo disp0 > $DISPLAY/name
             echo switch > $DISPLAY/command
             echo 1 0 > $DISPLAY/param
@@ -85,7 +85,11 @@ case "${ACTION}" in
         fi
         ;;
     "currentResolution")
-        fbset | grep "geometry" | awk '{print $2"x"$3}'
+        if [ "$BOARD" = "rg28xx" ]; then	
+            fbset | grep "geometry" | awk '{print $3"x"$2}'
+        else
+            fbset | grep "geometry" | awk '{print $2"x"$3}'
+	fi
         ;;
     "currentOutput")
         ;;
