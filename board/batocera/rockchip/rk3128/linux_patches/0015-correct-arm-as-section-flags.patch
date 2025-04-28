@@ -1,0 +1,30 @@
+--- a/arch/arm/mm/proc-v7.S	2025-04-28 03:41:36.332616033 +0000
++++ b/arch/arm/mm/proc-v7.S	2025-04-28 03:41:50.456617819 +0000
+@@ -504,7 +504,7 @@
+ 	string	cpu_elf_name, "v7"
+ 	.align
+ 
+-	.section ".proc.info.init", #alloc
++	.section ".proc.info.init", "a"
+ 
+ 	/*
+ 	 * Standard v7 proc info content
+--- a/arch/arm/boot/compressed/piggy.lz4.S	2025-04-28 03:44:35.496610409 +0000
++++ b/arch/arm/boot/compressed/piggy.lz4.S	2025-04-28 03:44:43.468608874 +0000
+@@ -1,4 +1,4 @@
+-	.section .piggydata,#alloc
++	.section .piggydata,"a"
+ 	.globl	input_data
+ input_data:
+ 	.incbin	"arch/arm/boot/compressed/piggy.lz4"
+--- a/arch/arm/boot/compressed/head.S	2025-04-28 03:45:01.976604954 +0000
++++ b/arch/arm/boot/compressed/head.S	2025-04-28 03:45:16.876601440 +0000
+@@ -112,7 +112,7 @@
+ #endif
+ 		.endm
+ 
+-		.section ".start", #alloc, #execinstr
++		.section ".start", "a", "e"
+ /*
+  * sort out different calling conventions
+  */
