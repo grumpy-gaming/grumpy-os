@@ -60,8 +60,16 @@ case "$1" in
       # replace with whatever UDC you have under /sys/class/udc/
       echo "$UDC" > $GADGET/UDC
 
-      [ $? = 0 ] && echo "OK" || echo "FAIL"
-      exit 0
+      if [ $? = 0 ]; then
+        echo "OK"
+
+        # Show EmulationStation warning
+        curl -s -X POST http://127.0.0.1:1234/messagebox -d "$(printf 'WARNING!\nDo not use MTP while a game is running.\nIt may cause data loss.')"
+      else
+        echo "FAIL"
+      fi
+
+    exit 0
     fi
 
     if [ "$usbmode" = "adb" ]; then
