@@ -283,7 +283,7 @@ shared:
     hotkey_up:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: INCREASE SAVE SLOT NUMBER
       description: Default hotkey + UP.
       choices:
@@ -305,7 +305,7 @@ shared:
     hotkey_down:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: DECREASE SAVE SLOT NUMBER
       description: Default hotkey + DOWN.
       choices:
@@ -327,7 +327,7 @@ shared:
     hotkey_left:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: REWIND
       description: Default hotkey + LEFT.
       choices:
@@ -349,7 +349,7 @@ shared:
     hotkey_right:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: FAST-FORWARD
       description: Default hotkey + RIGHT.
       choices:
@@ -371,7 +371,7 @@ shared:
     hotkey_y:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: SAVE STATE
       description: Default hotkey + Y.
       choices:
@@ -393,7 +393,7 @@ shared:
     hotkey_x:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: LOAD STATE
       description: Default hotkey + X.
       choices:
@@ -415,7 +415,7 @@ shared:
     hotkey_b:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: RETROARCH MENU
       description: Default hotkey + B.
       choices:
@@ -437,7 +437,7 @@ shared:
     hotkey_a:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: RESET EMULATOR
       description: Default hotkey + A.
       choices:
@@ -459,7 +459,7 @@ shared:
     hotkey_l1:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: SCREENSHOT
       description: Default hotkey + L1.
       choices:
@@ -481,7 +481,7 @@ shared:
     hotkey_r1:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: AUTO TRANSLATE
       description: Default hotkey + R1.
       choices:
@@ -503,7 +503,7 @@ shared:
     hotkey_l2:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: PREVIOUS SHADER
       description: Default hotkey + L2.
       choices:
@@ -525,7 +525,7 @@ shared:
     hotkey_r2:
       order: 98
       group: CONTROLS
-      submenu: HOTKEYS
+      submenu: RETROARCH HOTKEYS
       prompt: NEXT SHADER
       description: Default hotkey + R2.
       choices:
@@ -545,7 +545,7 @@ shared:
         "l3": "l3"
         "r3": "r3"
 global:
-  shared: [powermode, batterymode, tdp, videomode, ratio, shaderset, smooth, integerscale, integeroverscale, integerscaleaxis, bezel, bezel_stretch, hud, hud_corner, bezel.tattoo, bezel.tattoo_corner, bezel.tattoo_file, bezel.resize_tattoo, ai_service_enabled, ai_target_lang, ai_service_url, ai_service_pause, rewind, toggle_fast_forward, runahead, secondinstance, video_frame_delay_auto, vrr_runloop_enable, video_threaded, rumble_gain]
+  shared: [powermode, batterymode, tdp, videomode, ratio, shaderset, smooth, integerscale, integeroverscale, integerscaleaxis, bezel, bezel_stretch, hud, hud_corner, bezel.tattoo, bezel.tattoo_corner, bezel.tattoo_file, bezel.resize_tattoo, ai_service_enabled, ai_target_lang, ai_service_url, ai_service_pause, rewind, toggle_fast_forward, runahead, secondinstance, video_frame_delay_auto, vrr_runloop_enable, video_threaded, rumble_gain, hotkey_up, hotkey_down, hotkey_left, hotkey_right, hotkey_y, hotkey_x, hotkey_b, hotkey_a, hotkey_l1, hotkey_r1, hotkey_l2, hotkey_r2]
 
 libretro:
   shared: [powermode, tdp, videomode, ratio, shaderset, smooth, integerscale, integeroverscale, integerscaleaxis, bezel, bezel_stretch, hud, hud_corner, bezel.tattoo, bezel.tattoo_corner, bezel.tattoo_file, bezel.resize_tattoo, ai_service_enabled, ai_target_lang, ai_service_url, ai_service_pause, toggle_fast_forward, runahead, preemptiveframes, secondinstance, video_frame_delay_auto, vrr_runloop_enable, video_threaded, rumble_gain, audio_volume, hotkey_up, hotkey_down, hotkey_left, hotkey_right, hotkey_y, hotkey_x, hotkey_b, hotkey_a, hotkey_l1, hotkey_r1, hotkey_l2, hotkey_r2]
