@@ -46,6 +46,7 @@
 - Fixed issues with auto-pairing and re-connecting of Bluetooth controllers
 - Fixed cursor movement bug in the popup keyboard
 - Fixed EmulationStation rendering issue with the Korean character '가'
+- Fixed bezels and charging screen for RG28XX
 
 ### CHANGED / IMPROVED
 - OS features
@@ -55,6 +56,8 @@
     - Improved stability and consistency of Wi-Fi (e.g., by adding `connman` delay and increasing timeout limit)
     - Improved EmulationStation launch speed by limiting recursive depth of game to 1
     - Added per-system toggle to lift the recursive depth limit if required
+    - MacOS system files (indicated by file name prefix `._`) are no longer considered as games and therefore hidden from EmulationStation
+    - Renamed "Overclock" menu to "CPU Clock Rate" (because on most devices, this menu is for "underclocking")
 - Emulation features
     - Updated RetroArch to 1.20.x
     - Updated ScummVM to 2.9.0
