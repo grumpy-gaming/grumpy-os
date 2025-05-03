@@ -9,21 +9,16 @@ fi
 case "${1}" in
    suspend)
       # Disable xradio Wi-Fi drivers
-      if [ "$BOARD" = "trimui-smart-pro" ]; then
-        rmmod xradio_wlan_tsp
-      else
-        rmmod xradio_wlan
-      fi
+      rfkill block wifi
+      rmmod xradio_wlan
       ;;
    thaw|resume)
       # Re-enable xradio Wi-Fi drivers
       if [ "$BOARD" = "trimui-smart-pro" ]; then
-        insmod /lib/modules/4.9.191/xradio_wlan.ko
-      else
         insmod /lib/modules/4.9.191/xradio_wlan_tsp.ko
+      else
+        insmod /lib/modules/4.9.191/xradio_wlan.ko
       fi
-      
-      # Make sure Wi-Fi isn't soft-blocked
       rfkill unblock wifi
       ;;
 esac
