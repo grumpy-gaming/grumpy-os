@@ -18,9 +18,9 @@ case "${1}" in
    thaw|resume)
       # Re-enable xradio Wi-Fi drivers
       if [ "$BOARD" = "trimui-smart-pro" ]; then
-        insmod /lib/modules/4.9.191/xradio_wlan.ko
-      else
         insmod /lib/modules/4.9.191/xradio_wlan_tsp.ko
+      else
+        insmod /lib/modules/4.9.191/xradio_wlan.ko
       fi
       
       # Make sure Wi-Fi isn't soft-blocked
