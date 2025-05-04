@@ -5,20 +5,6 @@ BATOCONF="/userdata/system/batocera.conf"
 DEFAULTCONF="/usr/share/batocera/datainit/system/batocera.conf"
 BOOTCONF="/boot/batocera-boot.conf"
 
-# Lets wait for emulation station to initialize...
-echo "Waiting for emulation station (up to 10 seconds)..."
-
-i=0
-while [ "$i" -lt 100 ]; do
-    [ -f /tmp/emulationstation.ready ] && break
-    sleep 0.1 # Need to make sure it launches as fast as possible once ES is ready
-    i=$((i + 1))
-done
-
-if [ "$i" -eq 100 ]; then
-    echo "Emulation station not ready after 10 seconds. Continuing anyway..."
-fi
-
 # if /userdata is not yet available
 if ! [ -f "$BATOCONF" ]; then
     # use the boot version of the file

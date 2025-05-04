@@ -1,10 +1,5 @@
 #!/bin/sh
 
-# Prevent running during shutdown/reboot. May be a better way of doing this, but for now this works.
-if [ -f /var/run/shutdown.flag ] || [ -f /boot/restart.flag ]; then
-    exit 0
-fi
-
 DISPLAY="/sys/kernel/debug/dispdbg"
 HDMI_STATE="/sys/devices/platform/soc/6000000.hdmi/extcon/hdmi/state"
 BOARD=$(cat /boot/boot/batocera.board)
@@ -82,6 +77,11 @@ case "${ACTION}" in
     "listModes")
         ;;
     "setOutput")
+        # Prevent running during shutdown/reboot. May be a better way of doing this, but for now this works.
+        if [ -f /var/run/shutdown.flag ] || [ -f /boot/restart.flag ]; then
+            exit 0
+        fi
+
         STATE=$(cat "$HDMI_STATE")
         if [ "$STATE" = "HDMI=1" ]; then
             set_output hdmi
@@ -90,11 +90,11 @@ case "${ACTION}" in
         fi
         ;;
     "currentResolution")
-        if [ "$BOARD" = "rg28xx" ]; then	
+        if [ "$BOARD" = "rg28xx" ]; then
             fbset | grep "geometry" | awk '{print $3"x"$2}'
         else
             fbset | grep "geometry" | awk '{print $2"x"$3}'
-	fi
+        fi
         ;;
     "currentOutput")
         ;;

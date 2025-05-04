@@ -25,7 +25,7 @@ do_poweroff() {
 
     if [ "$POWEROFF" = "reboot" ]; then
         mount -o remount,rw /boot
-        echo "1" > "$REBOOT_FLAG" # So the system knows if it's restart or cold boot for the charging binary in rcS
+        touch "$REBOOT_FLAG" # So the system knows if it's restart or cold boot for the charging binary in rcS
         sync
         mount -o remount,ro /boot
         shutdown -r now

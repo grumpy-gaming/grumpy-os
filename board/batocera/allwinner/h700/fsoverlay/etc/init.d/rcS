@@ -11,12 +11,12 @@ if [ "$BOARD" = "rg28xx" ]; then
 fi
 
 # This is needed so that on a restart charger binary is not run while plugged in
-RESTART_FLAG=$( [ -f /boot/restart.flag ] && cat /boot/restart.flag || echo 0 )
+RESTART_FLAG="/boot/restart.flag"
 
-if [ "$RESTART_FLAG" = "1" ]; then
+if [ -f "$RESTART_FLAG" ]; then
     # Reset the flag to 0 for the next boot
     mount -o remount,rw /boot
-    echo "0" > /boot/restart.flag
+    rm -f "$RESTART_FLAG"
     sync
     mount -o remount,ro /boot
 else
