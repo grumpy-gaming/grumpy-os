@@ -28,7 +28,7 @@ do_poweroff() {
         echo "1" > "$REBOOT_FLAG" # So the system knows if it's restart or cold boot for the charging binary in rcS
         sync
         mount -o remount,ro /boot
-        reboot
+        shutdown -r now
     else
         sync
 
