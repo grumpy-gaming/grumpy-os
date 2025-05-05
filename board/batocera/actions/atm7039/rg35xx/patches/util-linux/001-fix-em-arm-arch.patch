@@ -1,0 +1,13 @@
+--- a/include/audit-arch.h	2025-05-02 21:32:35.893809347 +0000
++++ b/include/audit-arch.h	2025-05-02 21:30:29.626104165 +0000
+@@ -9,6 +9,10 @@
+ #ifndef UTIL_LINUX_AUDIT_ARCH_H
+ #define UTIL_LINUX_AUDIT_ARCH_H
+ 
++#ifndef EM_ARM
++#define EM_ARM 40
++#endif
++
+ #if __x86_64__
+ #    define SECCOMP_ARCH_NATIVE AUDIT_ARCH_X86_64
+ #elif __i386__

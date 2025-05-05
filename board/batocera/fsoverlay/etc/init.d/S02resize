@@ -45,7 +45,7 @@ function format_internal() {
 		    ;;
 	    "exfat")
             mkfs.exfat -n SHARE ${PART} # what to do in case of error ? nothing.
-            echo -e "t\n#{PARTNUM}\n0700\nw\nY\n" | gdisk ${DISK}
+            echo -e "t\n${PARTNUM}\n0700\nw\nY\n" | gdisk ${DISK}
 		    ;;
 	    *)
 		# do nothing
