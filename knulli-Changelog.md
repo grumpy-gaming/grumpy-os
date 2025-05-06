@@ -1,4 +1,80 @@
-# knulli - firefly - alpha (20241111)
+# Knulli - Gladiator - ???
+
+## ChangeLog
+
+### ADDED ###
+- Device support
+    - support for RG34XX
+- OS features
+    - Introduced a new Knulli on-screen manual
+    - Introduced Device Settings menu
+        - RGB Settings: Moved to Device Settings
+        - RGB Settings: Battery indication can now be configured
+        - Power Management: Moved to Device Settings
+        - Power Management: New options added
+        - Power Management: Introduced new (optional) aggressive battery saver
+            - Sets CPU governor to powersave when device is idle
+            - Disables Wi-Fi while in-game unless retro-achievements are enabled
+        - USB Settings: Toggle between ADB, the newly introduced MTP, and no USB access
+        - Pico-8 Installer: Can now be launched from Device Settings
+        - Pico-8 Installer: Removes previous Pico-8 installation automatically now
+        - Added support for TrimUI switch input (can be configured in Device Settings to mute/unmute or turn RGB on/off or turn airplane mode on/off)
+    - Introduced automatic assignment of controllers to players (in order of connecting the controllers)
+    - Automatically switches between Bluetooth audio and built-in speaker output when devices connect/disconnect
+    - Added date and time display to the EmulationStation screensaver
+    - Added Korean input support to the EmulationStation on-screen popup keyboard
+    - Applied 60 Hz patches for RG35XX SP, RG34XX, and RG CubeXX (thank you, [@TheGammaSqueeze](https://github.com/TheGammaSqueeze/))
+    - Added single rainbow RGB mode to TrimUI Brick and Smart Pro
+    - Added MPV video player
+        - Disabled power saving while MPV is playing videos
+    - Introduced new EmulationStation notifications, e.g. Wi-Fi connection failure, virtual joystick mode, etc.
+    - Added support for USB audio. Just plug the USB DAC2 compatible device and go to *Settings* → *System Settings* → *Audio Output* and select your audio device.
+    - Added support for ZRAM swap support. Toggle the option at *Settings* → *System Settings* → *Services* → *ZRAMSWAP* to enable it.
+- Emulation features
+    - Introduced Quick Resume mode to boot right back into your game
+    - Introduced a toggle to the Ports system which purposely breaks cardinal mapping by swapping A/B and X/Y to match the Nintendo-style button labels with in-game prompts for Xbox controllers
+    - Introduced tate mode to RG34XX
+    - Netplay improvements
+        - Added support for local hotspot (Adhoc) connectivity in EmulationStation Netplay
+        - Added support for LAN game discovery in EmulationStation Netplay
+        - EmulationStation setting for automatically creating a Netplay lobby on game start
+        - EmulationStation setting to filter Netplay lobby results to relay server games only
+    - Enabled global hotkey customization for RetroArch cores
+    - Added [shimmerless shaders by Woohyun-Kang](https://github.com/Woohyun-Kang/Sharp-Shimmerless-Shader) for RetroArch cores
+
+### FIXED ###
+
+- Fixed RGB support for TrimUI Brick
+- Fixed RGB brightness when booting when HDMI is already plugged
+- Fixed sleep mode for TrimUI Brick/Smart Pro
+- Fixed Dpad/Analog toggle (virtual joystick) for TrimUI Brick
+- Fixed rumble confirmations on TrimUI Brick (still no rumble in-game)
+- Adapted bezel positioning via configgen to new requirements of RetroArch 1.20.x
+- Battery saving no longer interrupts MPV (the video player)
+- Fixed issues with auto-pairing and re-connecting of Bluetooth controllers
+- Fixed cursor movement bug in the popup keyboard
+- Fixed EmulationStation rendering issue with the Korean character '가'
+- Fixed bezels and charging screen for RG28XX
+- Fixed issue with volume indicator overlay not showing on TrimUI devices
+
+### CHANGED / IMPROVED
+- OS features
+    - Default file system is exFAT now (will only be applied when flashing)
+    - Consolidated resizing/formatting scripts across various SOCs
+    - RGB daemon must no longer be enabled as a service
+    - Improved stability and consistency of Wi-Fi (e.g., by adding `connman` delay and increasing timeout limit)
+    - Improved EmulationStation launch speed by limiting recursive depth of game to 1
+    - Added per-system toggle to lift the recursive depth limit if required
+    - MacOS system files (indicated by file name prefix `._`) are no longer considered as games and therefore hidden from EmulationStation
+    - Renamed "Overclock" menu to "CPU Clock Rate" (because on most devices, this menu is for "underclocking")
+    - Disabled IPv6 by default
+- Emulation features
+    - Updated RetroArch to 1.20.x
+    - Updated ScummVM to 2.9.0
+    - Replaced default Korean font: NanumMyeongjo → NanumSquare_acB
+    - Replaced Drastic-Steward with Advanced Drastic
+
+# Knulli - Firefly - (20241204)
 
 ## ChangeLog
 
