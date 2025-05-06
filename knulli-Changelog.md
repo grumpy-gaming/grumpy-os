@@ -28,6 +28,8 @@
     - Added MPV video player
         - Disabled power saving while MPV is playing videos
     - Introduced new EmulationStation notifications, e.g. Wi-Fi connection failure, virtual joystick mode, etc.
+    - Added support for USB audio. Just plug the USB DAC2 compatible device and go to *Settings* → *System Settings* → *Audio Output* and select your audio device.
+    - Added support for ZRAM swap support. Toggle the option at *Settings* → *System Settings* → *Services* → *ZRAMSWAP* to enable it.
 - Emulation features
     - Introduced Quick Resume mode to boot right back into your game
     - Introduced a toggle to the Ports system which purposely breaks cardinal mapping by swapping A/B and X/Y to match the Nintendo-style button labels with in-game prompts for Xbox controllers
