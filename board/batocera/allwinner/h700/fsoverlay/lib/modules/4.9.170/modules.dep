@@ -19,3 +19,20 @@ kernel/drivers/media/usb/uvc/uvcvideo.ko: kernel/drivers/media/v4l2-core/videobu
 kernel/drivers/media/usb/gspca/gspca_main.ko:
 kernel/drivers/bluetooth/bcm_btlpm.ko:
 kernel/drivers/bluetooth/rtl_btlpm.ko:
+kernel/drivers/usb/gadget/function/usb_f_accessory.ko:
+kernel/drivers/char/sunxi_g2d/g2d_sunxi.ko:
+kernel/drivers/usb/gadget/legacy/g_audio.ko:
+kernel/drivers/usb/gadget/function/usb_f_acm.ko: kernel/drivers/usb/gadget/function/u_serial.ko
+kernel/drivers/usb/gadget/function/usb_f_mass_storage.ko:
+kernel/drivers/usb/gadget/function/usb_f_mtp.ko:
+kernel/drivers/usb/gadget/function/u_serial.ko:
+kernel/sound/usb/snd-usb-audio.ko: kernel/sound/core/snd-hwdep.ko kernel/sound/usb/snd-usbmidi-lib.ko
+extra/8812au.ko:
+kernel/drivers/usb/gadget/function/usb_f_midi.ko:
+kernel/drivers/usb/gadget/function/usb_f_fs.ko:
+kernel/fs/squashfs/squashfs.ko:
+kernel/drivers/usb/gadget/function/usb_f_uac2.ko:
+kernel/sound/core/snd-hwdep.ko:
+kernel/drivers/usb/gadget/function/usb_f_audio_source.ko:
+kernel/drivers/block/zram/zram.ko:
+kernel/sound/usb/snd-usbmidi-lib.ko:
