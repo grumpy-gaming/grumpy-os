@@ -30,6 +30,8 @@ class Advanced_DrasticGenerator(Generator):
         advanced_drastic_root = "/userdata/system/configs/advanced_drastic"
         advanced_drastic_bin = "/userdata/system/configs/advanced_drastic/launch.sh"
         advanced_drastic_conf = "/userdata/system/configs/advanced_drastic/config/drastic.cfg"
+        advanced_drastic_saves = "/userdata/saves/nds/advanced_drastic/saves"
+        advanced_drastic_states = "/userdata/saves/nds/advanced_drastic/states"
 
         board = os.popen("cat /boot/boot/batocera.board").read()
         board=board.rstrip("\n\r ")
@@ -46,6 +48,27 @@ class Advanced_DrasticGenerator(Generator):
             if os.path.exists("/usr/share/advanced_drastic/devices/" + board ):
                 os.system("cp -rv /usr/share/advanced_drastic/devices/" + board + "/* /userdata/system/configs/advanced_drastic")
             os.system("cp /boot/boot/batocera.board /userdata/system/configs/advanced_drastic")
+
+        # Bind mount saves and states locations
+        saves_target = os.path.join(advanced_drastic_root, "backup")
+        states_target = os.path.join(advanced_drastic_root, "savestates")
+
+        os.makedirs(saves_target, exist_ok=True)
+        os.makedirs(states_target, exist_ok=True)
+        os.makedirs(advanced_drastic_saves, exist_ok=True)
+        os.makedirs(advanced_drastic_states, exist_ok=True)
+
+        # Check for duplicate bind mounts
+        def is_bind_mounted(dst):
+            return os.path.ismount(dst)
+
+        # Set bind mounts for exfat. No symlinks
+        if not is_bind_mounted(saves_target):
+            subprocess.call(["mount", "--bind", advanced_drastic_saves, saves_target])
+
+        if not is_bind_mounted(states_target):
+            subprocess.call(["mount", "--bind", advanced_drastic_states, states_target])
+
 
         # User Settings
         settings_to_update = {}

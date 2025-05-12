@@ -29,6 +29,7 @@ cycle() {
 display_off() {
     echo disable > /sys/kernel/debug/dispdbg/command
     echo lcd0 > /sys/kernel/debug/dispdbg/name
+    sleep 0.1
     echo 1 > /sys/kernel/debug/dispdbg/start
     exit 0
 }
@@ -36,6 +37,7 @@ display_off() {
 display_on() {
     echo enable > /sys/kernel/debug/dispdbg/command
     echo lcd0 > /sys/kernel/debug/dispdbg/name
+    sleep 0.1
     echo 1 > /sys/kernel/debug/dispdbg/start
     exit 0
 }

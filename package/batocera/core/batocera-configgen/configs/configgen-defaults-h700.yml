@@ -8,8 +8,8 @@ default:
     retroarch.audio_driver: alsathread
 
 nds:
-  emulator: drastic
-  core:     drastic
+  emulator: advanced_drastic
+  core:     advanced_drastic
 fmtowns:
   emulator: libretro
   core:     mame

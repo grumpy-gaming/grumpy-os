@@ -4,12 +4,12 @@ default:
     video_threaded: true
     # menu retroarch
     retroarch.menu_driver: ozone
+    retroarch.menu_scale_factor: "1.500000"
     retroarch.audio_driver: alsathread
-    retroarch.menu_scale_factor: 1.500000
 
 nds:
-  emulator: drastic
-  core:     drastic
+  emulator: advanced_drastic
+  core:     advanced_drastic
 fmtowns:
   emulator: libretro
   core:     mame
@@ -27,6 +27,9 @@ dreamcast:
 naomi:
   emulator: libretro
   core:     flycastvl
+n64:
+  emulator: libretro
+  core:     parallel_n64
 cdi:
   emulator: libretro
   core:     same_cdi

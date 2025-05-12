@@ -8,7 +8,7 @@
 #    ##                                           ##  #
 #    ############################################     #
 #    ############################################     #
-# v2.0                                                #
+# v2.1                                                #
 #######################################################
 
 LOCK="/var/run/battery-saver.lock"
@@ -156,13 +156,9 @@ do_inactivity() {
         ;;
         suspend)
             pm-is-supported --suspend && pm-suspend
-            STATE="active"
-            echo "1" > "$STATE_FLAG"
+            do_activity
         ;;
         shutdown)
-            batocera-brightness dispoff
-            amixer set Master mute
-            batocera-es-swissknife --emukill
             knulli-shutdown -s
         ;;
     esac
@@ -175,9 +171,6 @@ do_extended_inactivity() {
             do_activity
         ;;
         shutdown)
-            batocera-brightness dispoff
-            amixer set Master mute
-            batocera-es-swissknife --emukill
             knulli-shutdown -s
         ;;
     esac
@@ -214,7 +207,6 @@ do_activity() {
 
 monitor_controllers() {
     while true; do
-        input_detected=false
         local TIMEOUT=""
 
         if [ "$STATE" = "inactive" ]; then
@@ -231,21 +223,21 @@ monitor_controllers() {
             read -r _ event _ <<< "$event_data"
 
             case "$event" in
-                CREATE | DELETE)
+                CREATE* | DELETE*)
+                    sleep 0.5 # Makes sure multiple events don't trigger loop restart
                     continue # Restart the loop so a new inotifywait is started for any controller changes that happened
                     ;;
                 ACCESS)
-                    LOOP_COUNT=0
-                    input_detected=true
                     if [ "$STATE" = "inactive" ]; then
                         do_activity
                     fi
                     sleep 1 # Throttles to reduce cpu usage during frequent inputs especially with multiple controllers
+                    continue # Restart the loop
                     ;;
             esac
         fi
 
-        if [ "$input_detected" = "false" ] && [ ! -f "$PAUSE_FLAG" ]; then
+        if [ ! -f "$PAUSE_FLAG" ]; then
             if [ "$STATE" = "active" ]; then
                 do_inactivity
             elif [ "$STATE" = "inactive" ]; then

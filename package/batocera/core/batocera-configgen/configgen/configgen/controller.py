@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
+import subprocess
 from collections.abc import Iterable, Mapping
 from dataclasses import InitVar, dataclass, field, replace
 from pathlib import Path
@@ -192,17 +193,24 @@ class Controller:
             if controller:
                 controller_list.append(controller)
 
-        # If there's more than one controller safe to assume the first is internal and remove it
-        if len(controller_list) > 1:
-            controller_list.pop(0)
+        # Skip removing internal controller if system.input.p1_handheld is "1"
+        p1_handheld = subprocess.getoutput("batocera-settings-get system.input.p1_handheld").strip() == "1"
 
-        # Reassign player numbers
-        controllers: ControllerDict = {}
-        for i, ctrl in enumerate(controller_list[:max_players], start=1):
-            ctrl.player_number = i
-            controllers[i] = ctrl
+        # If there's more than one controller safe to assume the first(lowest event number) is internal and remove it
+        if not p1_handheld and len(controller_list) > 1:
+            internal_controller = min(
+                range(len(controller_list)),
+                key=lambda i: int(controller_list[i].device_path.rsplit("event", 1)[-1])
+            )
+            controller_list.pop(internal_controller)
 
-        return controllers
+            # Reassign player numbers
+            for i, ctrl in enumerate(controller_list[:max_players], start=1):
+                ctrl.player_number = i
+
+        return {
+                ctrl.player_number: ctrl for ctrl in controller_list[:max_players]
+            }
 
     @classmethod
     def find_best_controller_config(

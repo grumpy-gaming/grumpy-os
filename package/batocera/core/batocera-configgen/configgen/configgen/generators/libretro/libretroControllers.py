@@ -34,36 +34,45 @@ systemToSwapDisable = {'amigacd32', 'amigacdtv', 'naomi', 'atomiswave', 'megadri
 # Warning, function used by amiberry because it reads the same retroarch formatting
 def writeControllersConfig(retroconfig: UnixSettings, system: Emulator, controllers: ControllerMapping, lightgun: bool) -> None:
     # Map buttons to the corresponding retroarch specials keys
-    retroarchspecials = {'x': 'load_state', 'y': 'save_state', 'a': 'reset', 'start': 'exit_emulator', \
+    default_specials = {'x': 'load_state', 'y': 'save_state', 'a': 'reset', 'start': 'exit_emulator', \
                          'up': 'state_slot_increase', 'down': 'state_slot_decrease', 'left': 'rewind', 'right': 'hold_fast_forward', \
                          'pageup': 'screenshot', 'pagedown': 'ai_service', 'l2': 'shader_prev', 'r2': 'shader_next'}
-    retroarchspecials["b"] = "menu_toggle"
+    default_specials["b"] = "menu_toggle"
 
     # Enable toggle fast forward instead of hold
     if system.isOptSet('toggle_fast_forward') and system.getOptBoolean('toggle_fast_forward') == True:
-        retroarchspecials["right"] = "toggle_fast_forward"
+        default_specials["right"] = "toggle_fast_forward"
 
 ########## Customize hotkeys ##########
-    
-    updated_specials = {}
-    for key, value in retroarchspecials.copy().items():
-        
-        hotkey_var = f"hotkey_{key}"
-        
-        if hotkey_var == "hotkey_pageup":
-            hotkey_var = "hotkey_l1"
-        elif hotkey_var == "hotkey_pagedown":
-            hotkey_var = "hotkey_r1"
-        
+
+    custom_specials = default_specials.copy()
+
+    for key, default_action in default_specials.items():
+        # pageup/pagedown is used internally for l1/r1
+        if key == 'pageup':
+            hotkey_var = 'hotkey_l1'
+        elif key == 'pagedown':
+            hotkey_var = 'hotkey_r1'
+        else:
+            hotkey_var = f"hotkey_{key}"
+
         if system.isOptSet(hotkey_var):
-            if system.config[hotkey_var] == "none":
-                del retroarchspecials[key]
-            else:
-                new_key = system.config[hotkey_var]
-                updated_specials[new_key] = value
-    
-    retroarchspecials.update(updated_specials)
-    
+            custom_input = system.config[hotkey_var]
+            if custom_input == "none":
+                if key in custom_specials:
+                    del custom_specials[key]
+                continue
+
+            for existing_key, existing_action in list(custom_specials.items()):
+                if existing_key == custom_input and existing_action != default_action:
+                    del custom_specials[existing_key]
+
+            custom_specials[custom_input] = default_action
+            if key != custom_input and key in custom_specials and custom_specials[key] == default_action:
+                del custom_specials[key]
+
+    retroarchspecials = custom_specials
+
 #######################################
 
     # Some input adaptations for some systems with swap Disc/CD \\ Disabling for now until I know how to handle this with custom hotkeys
@@ -95,7 +104,7 @@ def writeControllersConfig(retroconfig: UnixSettings, system: Emulator, controll
     # No menu in non full uimode
     if system.config["uimode"] != "Full":
         del retroarchspecials['b']
-    
+
     # Check if hotkeys need to be removed/disabled (Needed for N64 controllers without a dedicated hotkey button)
     # Assign value based on core
     if (system.config['core'] == 'mupen64plus-next'):
@@ -107,7 +116,7 @@ def writeControllersConfig(retroconfig: UnixSettings, system: Emulator, controll
     # Check for limited hotkey setting
     if option and option in system.config and system.config[option] in ['n64limited']:
         retroarchspecials = {'start': 'exit_emulator'}
-    
+
     for controller in controllers:
         mouseIndex = None
         if system.name in ['nds', '3ds']:
