@@ -1,5 +1,8 @@
 #!/bin/sh
 
+. /etc/profile.d/xdg.sh
+. /etc/profile.d/dbus.sh
+
 #export LD_LIBRARY_PATH=/usr/lib:/usr/local/XSGX/lib:/lib
 #export DISPLAY=:0
 export HOME=/userdata/system
@@ -30,7 +33,7 @@ export HOME=/userdata/system
 
 CUSTOM_LAUNCHER_FILE="/userdata/system/customlauncher"
 
-LAUNCHER="simplemenu"
+LAUNCHER="simplermenu_plus"
 
 if [ -f "${CUSTOM_LAUNCHER_FILE}" ]; then
     # Read the content of the file
@@ -48,7 +51,7 @@ do
         cd $HOME
         $LAUNCHER
     fi
-    GAMELAUNCH=0
+    exit 0 
 done
 exit 0
 

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+SDL_VSYNC=1 SDL_RENDER_DRIVER=opengles2 PPSSPP "$1"
+
+
