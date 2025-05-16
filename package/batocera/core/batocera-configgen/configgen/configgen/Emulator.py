@@ -51,6 +51,8 @@ class Emulator():
         self.updateFromESSettings()
         eslog.debug("uimode: {}".format(self.config['uimode']))
 
+        self.config["language"] = recalSettings.config.get('DEFAULT', 'system.language', fallback=None)
+
         # forced emulators ?
         self.config["emulator-forced"] = False
         self.config["core-forced"] = False
