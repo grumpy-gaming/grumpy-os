@@ -1,14 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
-name='Master'
+name='DAC PA'
 
-value=$(amixer sget "$name" | sed -n "s/  Front Left: \([0-9]*\) .*/\1/p")
-
+value=$(amixer sget "$name" | sed -n "s/  Mono: \([0-9]*\) .*/\1/p")
+echo "$value"
 if [[ "$1" == "up" ]]; then
-        let value=value+10
-        if [[ $value -gt 99 ]]; then value=99; fi
+        let value=value+5
+        if [[ $value -gt 40 ]]; then value=40; fi
 else
-        let value=value-10
+        let value=value-5
         if [[ $value -lt 0 ]]; then value=0; fi
 fi
 

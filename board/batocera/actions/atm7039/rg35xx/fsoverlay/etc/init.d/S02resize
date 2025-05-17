@@ -1,45 +1,163 @@
 #!/bin/bash
 
-log="/tmp/resize.log"
+BOOTCONF="/boot/batocera-boot.conf"
+LOG="/tmp/resize.log"
 
 # only at start
 test "$1" != "start" && exit 0
 
-mount -o rw,remount /boot
 # true if triggers are not available or not set to do so
-if [ ! -f /boot/boot/autoresize ]
-then
+if ! grep -qE '^[ ]*autoresize[ ]*=[ ]*true[ ]*$' "${BOOTCONF}" && ! grep -qE '^[ ]*format-internal[ ]*=' "${BOOTCONF}"; then
     exit 0
 fi
 
-# --- BEGIN RESIZE ---
-# remove the trigger
-rm -f /boot/boot/autoresize
-DISK=/dev/mmcblk0
-PART=/dev/mmcblk0p3
-PARTNUM=3
+# Remove the trigger(s)
+remove_trigger() {
+    local trigger="$1"
+    mount -o remount,rw /boot
+    sed -i -e "s/^[ ]*${trigger}/#${trigger}/g" "${BOOTCONF}"
+    mount -o remount,ro /boot
+}
 
-cd /root
-umount /boot
-umount ${PART}
+# Partition size calculation
+get_partition_size_mb() {
+    local partition="$1"
+    local size_kb=$(blockdev --getsize64 "$partition")
+    echo $((size_kb / 1024 / 1024))
+}
 
-sync
+format_internal() {
+    if [ "$1" = "exfat" ]; then
+        FORMAT_INTERNAL_TYPE="exfat"
+    else
+        FORMAT_INTERNAL_TYPE=$(grep -E '^[ ]*format-internal[ ]*=.*$' "${BOOTCONF}" | head -1 | sed -e s+"^[ ]*format-internal[ ]*=[ ]*\(.*\)[ ]*$"+"\1"+)
+    fi
 
-echo -e "1\nd\n3\nn\n3\n7356416\n\n0700\nw\ny\n" | gdisk ${DISK} 
+    echo "Format internal type: $FORMAT_INTERNAL_TYPE" >> "$LOG"
+    PART=$(batocera-part "share_internal")
+    DISK=$(batocera-part prefix "${PART}")
+    echo "Disk = $DISK" >> "$LOG"
 
-partprobe ${DISK} >> "$log"
+    case "${FORMAT_INTERNAL_TYPE}" in
+	    "ext4")
+            mkfs.ext4 -L SHARE -q -F -F ${PART} # what to do in case of error ? nothing.
+            echo -e "t\n${PARTNUM}\n8300\nw\nY\n" | gdisk ${DISK}
+		    ;;
+	    "exfat")
+            mkfs.exfat -n SHARE ${PART} # what to do in case of error ? nothing.
+            echo -e "t\n${PARTNUM}\n0700\nw\nY\n" | gdisk ${DISK}
+		    ;;
+	    *)
+		# do nothing
+    esac
 
-sync
+    # Allwinner H700 & A133
+    echo -e "r\nb\nc\nY\nw\nY\n" | gdisk ${DISK}
+    partprobe ${DISK}
+}
 
-mkfs.exfat -n SHARE ${PART} >> "$log"
+# only when resizing is wanted
+if grep -qE '^[ ]*autoresize[ ]*=[ ]*true[ ]*$' "${BOOTCONF}"; then
 
-partprobe ${DISK} >> "$log"
+    # --- BEGIN RESIZE ---
+    
+    # Get /userdata partition details
+    PART=$(batocera-part "share_internal")
+    PARTNUM=$(batocera-part "share_internal_num")
+    echo "Partition name: $PART & number: $PARTNUM" >> "$LOG"
+    
+    # Check the initial partition size
+    PARTSIZE=$(get_partition_size_mb "$PART")
+    echo "Initial partition size: ${PARTSIZE} MB" >> "$LOG"
+    
+    # Determine if we should format based on initial size
+    FORMAT_ALLOWED=false
+    if [ "$PARTSIZE" -eq 256 ] || [ "$PARTSIZE" -eq 512 ]; then
+        FORMAT_ALLOWED=true
+        echo "Initial partition size is $PARTSIZE, formatting will be allowed" >> "$LOG"
+    else
+        echo "Initial partition size is larger than initial image size, formatting will be skipped" >> "$LOG"
+    fi
+    
+    # boot disk
+    DISK=$(batocera-part prefix "${PART}")
+    echo "Disk = $DISK" >> "$LOG"
 
-sync
+    TABLETYPE=$(parted -s ${DISK} print | grep 'Partition Table' | awk '{print $3}')
+    echo "Disk partition table type = $TABLETYPE" >> "$LOG"
 
-# The first time we start we reboot to make sure the partition changes are permanent
-sleep 1
-reboot
+    # only for ext4 or vfat
+    PARTTYPE=$(blkid -o value -s TYPE "${PART}")
+    if [ "${PARTTYPE}" != "ext4" ] && [ "${PARTTYPE}" != "vfat" ]; then
+       echo " -> skipping resize: unsupported fs type '${PARTTYPE}'" >> "$LOG"
+       exit 0
+    fi
+    echo "Partition type = ${PARTTYPE}" >> "$LOG"
+
+
+    # check for a GPT partition
+    if [ "${TABLETYPE}" = "gpt" ]; then
+        # move backup GPT data structures to the end of the disk
+        echo "Step $i: Moving 2nd GPT table to the end of the disk" >> "$LOG"
+        sgdisk -e ${DISK}
+    else
+        echo "Step $i: Skipping GPT table move, disk is not GPT" >> "$LOG"
+    fi
+
+    # resize the partition
+    echo "Step $i: Resizing the partition to 100%" >> "$LOG"
+    parted -s -m -f ${DISK} resizepart ${PARTNUM} 100%
+
+    # update the kernel
+    echo "Step $i: Updating the kernel" >> "$LOG"
+    partprobe ${DISK}
+    
+    if [ "${PARTTYPE}" = "ext4" ] && [ "$FORMAT_ALLOWED" = true ]; then
+        echo "Step $i: Formatting ext4" >> "$LOG"
+        mkfs.ext4 -L SHARE -q -F -F ${PART}
+    else
+        echo "Step $i: Skipping filesystem create (type=${PARTTYPE})" >> "$LOG"
+    fi
+    
+    # check the filesystem
+    if [ "${PARTTYPE}" = "ext4" ]; then
+        echo "Step $i: Checking ext4" >> "$LOG"
+        e2fsck -f -p ${PART}
+    elif [ "${PARTTYPE}" = "vfat" ]; then
+        echo "Step $i: Checking vfat" >> "$LOG"
+        fsck.vfat -a ${PART}
+        echo "Step $i: Resizing vfat to fill partition" >> "$LOG"
+        mkfs.exfat -n SHARE ${PART} # what to do in case of error ? nothing.
+        echo -e "t\n${PARTNUM}\n0700\nw\nY\n" | gdisk ${DISK}
+    fi
+    
+    # finally disk sync
+    echo "Step $i: Final sync" >> "$LOG"
+    sync
+    
+    # remove the trigger
+    echo "remove_trigger autoresize" >> "$LOG"
+    remove_trigger autoresize
+
+    # Allwinner H700
+    echo -e 'r\nb\nc\nY\nw\nY\n' | gdisk ${DISK}
+    partprobe ${DISK}
+
+    # We are going to reformat the internal partition as exfat
+    format_internal "exfat"
+
+    partprobe ${DISK}
+    sync
+    reboot
+
+else
+    ###### format internal share #####
+
+    # Format internal share
+    format_internal
+    
+    # remove the trigger
+    mount -o remount,rw /boot && sed -i -e s+'^[ ]*format-internal'+'#format-internal'+ "${BOOTCONF}" && mount -o remount,ro /boot
+fi
 
 exit 0
-
