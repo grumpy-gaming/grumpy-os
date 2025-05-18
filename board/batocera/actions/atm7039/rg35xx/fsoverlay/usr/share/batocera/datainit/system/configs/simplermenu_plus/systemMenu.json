@@ -1,0 +1,67 @@
+ 
+{
+    "SystemMenu": [
+        {
+            "id": "APPLICATION.volume",
+            "type": "IntegerMenuItem",
+            "title": "Volume"
+        },
+        {
+            "id": "APPLICATION.brightness",
+            "type": "IntegerMenuItem",
+            "title": "Brightness"
+        },
+        {
+            "id": "APPLICATION.screenRefresh",
+            "type": "IntegerMenuItem",
+            "title": "Screen Refresh Rate"
+        },
+        {
+            "id": "APPLICATION.showFPS",
+            "type": "BooleanMenuItem",
+            "title": "showFPS"
+        },
+        {
+            "id": "APPLICATION.overclock",
+            "type": "MultiOptionMenuItem",
+            "title": "Overclock",
+            "options": ["840 MHz", "1008 MHz", "1296 MHz"]
+        },
+        {
+            "id": "APPLICATION.theme",
+            "type": "MultiOptionMenuItem",
+            "title": "Theme",
+            "options": ["Comicbook", "Simplermenu", "BigCody"]
+        },
+        {
+            "id": "APPLICATION.thumnailType",
+            "type": "MultiOptionMenuItem",
+            "title": "Thumbnail Type"
+        },
+        {
+            "id": "APPLICATION.usbMode",
+            "type": "BooleanMenuItem",
+            "title": "USB Mode"
+        },
+        {
+            "id": "APPLICATION.wifi",
+            "type": "BooleanMenuItem",
+            "title": "WIFI"
+        },
+        {
+            "id": "APPLICATION.rotation",
+            "type": "BooleanMenuItem",
+            "title": "Auto rotate"
+        },
+        {
+            "id": "APPLICATION.save",
+            "type": "SimpleMenuItem",
+            "title": "Save"
+        },
+        {
+            "id": "APPLICATION.quit",
+            "type": "SimpleMenuItem",
+            "title": "Quit"
+        }
+    ]
+}

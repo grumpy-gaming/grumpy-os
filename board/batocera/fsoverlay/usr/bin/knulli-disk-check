@@ -1,0 +1,93 @@
+#!/bin/bash
+
+OUTPUT_SUMMARY="Disk Check Results:\n"
+
+# Show message box
+do_messagebox() {
+  local MESSAGE="$1"
+  curl -s POST http://127.0.0.1:1234/messagebox -d "$(echo -e "$MESSAGE")" >/dev/null 2>&1
+}
+
+# Build list of storage devices
+do_build_device_list() {
+  mapfile -t DEVS < <(lsblk -dpno NAME,TYPE | awk '$2 != "loop" { print $1 }')
+  if (( ${#DEVS[@]} == 0 )); then
+    echo "No storage media found."
+    exit 1
+  fi
+}
+
+# Run fsck
+do_diskcheck() {
+  local DEVNODE="$1"
+  local NAME="$(basename "$DEVNODE")"
+
+  mapfile -t PARTS < <(lsblk -pnlo NAME,TYPE | awk -v d="$DEVNODE" '$2=="part" && $1~d{print $1}')
+
+  if (( ${#PARTS[@]} == 0 )); then
+    echo "No partitions found on $DEVNODE"
+    return
+  fi
+
+  local HAS_ERRORS=0
+
+  for PART in "${PARTS[@]}"; do
+    FSTYPE=$(lsblk -no FSTYPE "$PART")
+    echo "Running fsck on $PART (type: $FSTYPE)"
+
+    case "$FSTYPE" in
+      ext2|ext3|ext4)
+        OUTPUT=$(fsck.ext4 -n "$PART" 2>&1)
+        echo "$OUTPUT"
+        if echo "$OUTPUT" | grep -qi "clean"; then
+          echo "OK"
+        else
+          echo "Issues or warnings detected"
+          HAS_ERRORS=1
+        fi
+        ;;
+      vfat)
+        OUTPUT=$(fsck.vfat -n "$PART" 2>&1)
+        echo "$OUTPUT"
+        LINE_COUNT=$(echo "$OUTPUT" | grep -v "^fsck.fat" | wc -l)
+        if [ "$LINE_COUNT" -eq 1 ]; then
+          echo "OK"
+        else
+          echo "Issues or warnings detected"
+          HAS_ERRORS=1
+        fi
+        ;;
+      exfat)
+        OUTPUT=$(fsck.exfat -n "$PART" 2>&1)
+        echo "$OUTPUT"
+        if echo "$OUTPUT" | grep -q "No errors found"; then
+          echo "OK"
+        else
+          echo "Issues or warnings detected"
+          HAS_ERRORS=1
+        fi
+        ;;
+      *)
+        echo "Unsupported file system"
+        continue
+        ;;
+    esac
+  done
+
+  if (( HAS_ERRORS == 0 )); then
+    OUTPUT_SUMMARY+="$NAME: OK!\n"
+  else
+    OUTPUT_SUMMARY+="$NAME: ERRORS DETECTED!\n"
+  fi
+}
+
+echo "Starting disk check..."
+sync
+do_build_device_list
+for DEV in "${DEVS[@]}"; do
+  echo "Checking $DEV"
+  do_diskcheck "$DEV"
+done
+do_messagebox "$OUTPUT_SUMMARY"
+
+exit 0

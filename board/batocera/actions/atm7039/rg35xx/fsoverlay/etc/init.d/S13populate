@@ -1,0 +1,65 @@
+#!/bin/sh
+
+DRIVE="internal"
+
+# only at start
+test "$1" != "start" && exit 0
+
+# Check for external partitions first, try to mount the last one from 4 to 1
+for i in 4 3 2 1; 
+do 
+	if [ -b "/dev/mmcblk1p$i" ]; 
+	then 
+		echo "External /dev/mmcblk1p$i partition exists, mounting..."
+		mount /dev/mmcblk1p$i /userdata
+		DRIVE="external"
+		break
+	fi
+done
+
+# If no partition is mounted then, mount the internal partition
+if [ "$DRIVE" = "internal" ]; then
+	echo "Mounting internal mmcblk0p3..."
+	mount /dev/mmcblk0p3 /userdata
+fi
+
+# Create /userdata/system if it does not exist
+mkdir -p /userdata/system
+
+if [ ! -d "/userdata/system/configs" ]; then
+        mkdir -p /userdata/system/configs
+        cp -r /usr/share/configs /userdata/system/
+fi
+
+if [ ! -d "/userdata/system/configs/simplermenu_plus" ]; then
+	mkdir -p /userdata/system/configs
+	cp -rL /usr/share/batocera/datainit/system/configs/simplermenu_plus /userdata/system/configs
+fi
+
+# Populate retroarch configs
+if [ ! -f "/userdata/system/configs/retroarch/retroarch.cfg" ]; then
+	mkdir /userdata/system/configs/retroarch
+	cp -r /usr/share/batocera/datainit/system/configs/retroarch/retroarch.cfg /userdata/system/configs/retroarch/retroarch.cfg
+fi
+
+# Add bios folder if missing
+if [ ! -d "/userdata/bios" ]; then
+	mkdir /userdata/bios
+fi
+
+# Add logs folder if missing
+if [ ! -d "/userdata/system/logs" ]; then
+        mkdir /userdata/system/logs
+fi
+
+# Create the customlauncher file, and set simplemenu as default launcher
+if [ ! -f "/userdata/system/customlauncher" ]; then
+	echo "simplermenu_plus" > /userdata/system/customlauncher
+fi
+
+# Add sound state
+if [ ! -f "/userdata/system/.asound.state" ]; then
+	cp /usr/share/alsa/.asound.state /userdata/system/
+	alsactl restore 0 -f /userdata/system/.asound.state
+fi
+
