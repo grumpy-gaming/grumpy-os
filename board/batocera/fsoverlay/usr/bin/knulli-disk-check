@@ -25,7 +25,6 @@ do_diskcheck() {
   mapfile -t PARTS < <(lsblk -pnlo NAME,TYPE | awk -v d="$DEVNODE" '$2=="part" && $1~d{print $1}')
 
   if (( ${#PARTS[@]} == 0 )); then
-    echo "No partitions found on $DEVNODE"
     return
   fi
 
@@ -34,7 +33,7 @@ do_diskcheck() {
   for PART in "${PARTS[@]}"; do
     FSTYPE=$(lsblk -no FSTYPE "$PART")
     echo "Running fsck on $PART (type: $FSTYPE)"
-
+    sleep 1
     case "$FSTYPE" in
       ext2|ext3|ext4)
         OUTPUT=$(fsck.ext4 -n "$PART" 2>&1)
@@ -42,20 +41,35 @@ do_diskcheck() {
         if echo "$OUTPUT" | grep -qi "clean"; then
           echo "OK"
         else
-          echo "Issues or warnings detected"
+          echo "Potential errors detected"
           HAS_ERRORS=1
         fi
+        sleep 1
         ;;
       vfat)
         OUTPUT=$(fsck.vfat -n "$PART" 2>&1)
         echo "$OUTPUT"
-        LINE_COUNT=$(echo "$OUTPUT" | grep -v "^fsck.fat" | wc -l)
-        if [ "$LINE_COUNT" -eq 1 ]; then
+
+        CLEANED_OUTPUT=$(echo "$OUTPUT" | grep -v "^fsck.fat")
+
+        # Filter out known harmless lines
+        FILTERED=$(echo "$CLEANED_OUTPUT" | grep -v -F -e "There are differences between boot sector and its backup." \
+                                                      -e "This is mostly harmless. Differences: (offset:original/backup)" \
+                                                      -e "  Not automatically fixing this." \
+                                                      -e "Dirty bit is set. Fs was not properly unmounted and some data may be corrupt." \
+                                                      -e " Automatically removing dirty bit." \
+                                                      -e "Leaving filesystem unchanged." \
+                              | grep -v -E "^$PART:" \
+                              | grep -v -E "^[[:space:]]*[0-9]+:[0-9A-Fa-f]+/[0-9A-Fa-f]+" \
+                              | grep -v -E "^\s*$")
+
+        if [ -z "$FILTERED" ]; then
           echo "OK"
         else
-          echo "Issues or warnings detected"
+          echo "Potential errors detected"
           HAS_ERRORS=1
         fi
+        sleep 1
         ;;
       exfat)
         OUTPUT=$(fsck.exfat -n "$PART" 2>&1)
@@ -63,12 +77,12 @@ do_diskcheck() {
         if echo "$OUTPUT" | grep -q "No errors found"; then
           echo "OK"
         else
-          echo "Issues or warnings detected"
+          echo "Potential errors detected"
           HAS_ERRORS=1
         fi
+        sleep 1
         ;;
       *)
-        echo "Unsupported file system"
         continue
         ;;
     esac
@@ -82,10 +96,12 @@ do_diskcheck() {
 }
 
 echo "Starting disk check..."
+sleep 1
 sync
 do_build_device_list
 for DEV in "${DEVS[@]}"; do
   echo "Checking $DEV"
+  sleep 1
   do_diskcheck "$DEV"
 done
 do_messagebox "$OUTPUT_SUMMARY"
