@@ -35,7 +35,6 @@ from .controller import Controller
 from .Emulator import Emulator
 from .generators import get_generator
 from .utils import bezels as bezelsUtil, gunsUtils, videoMode, wheelsUtils
-from .utils.hotkeygen import set_hotkeygen_context
 from .utils.logger import setup_logging
 from .utils.squashfs import squashfs_rom
 
@@ -200,7 +199,6 @@ def start_rom(args: argparse.Namespace, maxnbplayers: int, rom: str, romConfigur
         from .utils.evmapy import evmapy
         with (
             evmapy(systemName, system.config['emulator'], effectiveCore, effectiveRomConfiguration, player_controllers, guns),
-            set_hotkeygen_context(generator)
         ):
             # change directory if wanted
             executionDirectory = generator.executionDirectory(system.config, effectiveRom)

@@ -58,15 +58,30 @@ class Advanced_DrasticGenerator(Generator):
         os.makedirs(advanced_drastic_saves, exist_ok=True)
         os.makedirs(advanced_drastic_states, exist_ok=True)
 
+        # Moves original files before binding
+        def move_data(src_dir, dst_dir):
+            if os.path.exists(src_dir):
+                for filename in os.listdir(src_dir):
+                    shutil.move(os.path.join(src_dir, filename), os.path.join(dst_dir, filename))
+
         # Check for duplicate bind mounts
-        def is_bind_mounted(dst):
-            return os.path.ismount(dst)
+        def is_bind_mounted(mount_point):
+            try:
+                output = subprocess.check_output(
+                    ["findmnt", "--noheadings", "--target", str(mount_point)],
+                    text=True
+                )
+                return str(mount_point) in output
+            except subprocess.CalledProcessError:
+                return False
 
         # Set bind mounts for exfat. No symlinks
         if not is_bind_mounted(saves_target):
+            move_data(saves_target, advanced_drastic_saves)
             subprocess.call(["mount", "--bind", advanced_drastic_saves, saves_target])
 
         if not is_bind_mounted(states_target):
+            move_data(states_target, advanced_drastic_states)
             subprocess.call(["mount", "--bind", advanced_drastic_states, states_target])
 
 
