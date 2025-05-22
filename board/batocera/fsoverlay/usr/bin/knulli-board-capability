@@ -56,10 +56,6 @@ checkCapabilityByBoard() {
         if [ "$BOARD" = "rg35xx-plus" ] || [ "$BOARD" = "rg35xx-h" ] || [ "$BOARD" = "rg35xx-2024" ] || [ "$BOARD" = "rg35xx-sp" ] || [ "$BOARD" = "rg28xx" ] || [ "$BOARD" = "rg40xx-h" ] || [ "$BOARD" = "rg40xx-v" ] || [ "$BOARD" = "rg-cubexx" ] || [ "$BOARD" = "rg34xx" ] || [ "$BOARD" = "trimui-smart-pro" ] || [ "$BOARD" = "trimui-brick" ] || [ "$BOARD" = "miyoo-flip" ] || [ "$BOARD" = "rg-arc-s" ] || [ "$BOARD" = "powkiddy-rgb30" ]; then
             HAS_CAPABILITY=true
         fi
-    elif [ "$CAPABILITY" = "mtp" ]; then
-        if [ "$BOARD" = "rg35xx-plus" ] || [ "$BOARD" = "rg35xx-h" ] || [ "$BOARD" = "rg35xx-2024" ] || [ "$BOARD" = "rg35xx-sp" ] || [ "$BOARD" = "rg28xx" ] || [ "$BOARD" = "rg40xx-h" ] || [ "$BOARD" = "rg40xx-v" ] || [ "$BOARD" = "rg-cubexx" ] || [ "$BOARD" = "rg34xx" ] || [ "$BOARD" = "trimui-smart-pro" ] || [ "$BOARD" = "trimui-brick" ] || [ "$BOARD" = "miyoo-flip" ] || [ "$BOARD" = "rg-arc-s" ] || [ "$BOARD" = "powkiddy-rgb30" ]; then
-            HAS_CAPABILITY=true
-        fi
     elif [ "$CAPABILITY" = "bezelproject" ]; then
         if [ "$BOARD" = "trimui-smart-pro" ]; then
             HAS_CAPABILITY=true
