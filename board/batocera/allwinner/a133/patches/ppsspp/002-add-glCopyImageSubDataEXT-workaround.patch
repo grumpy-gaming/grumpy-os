@@ -1,31 +1,3 @@
-diff -urN a/Common/File/FileUtil.cpp b/Common/File/FileUtil.cpp
---- a/Common/File/FileUtil.cpp	2024-11-04 16:16:10.000000000 +0000
-+++ b/Common/File/FileUtil.cpp	2025-05-22 19:40:48.946193434 +0000
-@@ -191,6 +191,7 @@
- }
- 
- static std::string OpenFlagToString(OpenFlag flags) {
-+	printf("ABOUT TO CRASH\n");
- 	std::string s;
- 	if (flags & OPEN_READ)
- 		s += "READ|";
-diff -urN a/Common/GPU/OpenGL/GLCommon.h b/Common/GPU/OpenGL/GLCommon.h
---- a/Common/GPU/OpenGL/GLCommon.h	2024-11-04 16:16:10.000000000 +0000
-+++ b/Common/GPU/OpenGL/GLCommon.h	2025-05-23 03:06:22.622545901 +0000
-@@ -58,6 +58,13 @@
- #endif
- extern PFNGLBLITFRAMEBUFFERNVPROC glBlitFramebufferNV;
- 
-+typedef void (GL_APIENTRYP PFNGLCOPYIMAGESUBDATAEXTPROC)(
-+    GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ,
-+    GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ,
-+    GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth);
-+
-+extern PFNGLCOPYIMAGESUBDATAEXTPROC glCopyImageSubDataEXT;
-+
- #if PPSSPP_PLATFORM(IOS)
- extern PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT;
- extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
 diff -urN a/Common/GPU/OpenGL/GLFeatures.cpp b/Common/GPU/OpenGL/GLFeatures.cpp
 --- a/Common/GPU/OpenGL/GLFeatures.cpp	2025-05-23 03:47:43.943020514 +0000
 +++ b/Common/GPU/OpenGL/GLFeatures.cpp	2025-05-23 03:06:49.782499222 +0000
@@ -63,20 +35,6 @@ diff -urN a/Common/GPU/OpenGL/GLFeatures.cpp b/Common/GPU/OpenGL/GLFeatures.cpp
 diff -urN a/Common/GPU/OpenGL/GLQueueRunner.cpp b/Common/GPU/OpenGL/GLQueueRunner.cpp
 --- a/Common/GPU/OpenGL/GLQueueRunner.cpp	2024-11-04 16:16:10.000000000 +0000
 +++ b/Common/GPU/OpenGL/GLQueueRunner.cpp	2025-05-23 03:11:23.586035076 +0000
-@@ -1419,6 +1419,13 @@
- 	CHECK_GL_ERROR_IF_DEBUG();
- }
- 
-+// typedef void (GL_APIENTRYP PFNGLCOPYIMAGESUBDATAEXTPROC)(
-+//     GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ,
-+//     GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ,
-+//     GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth);
-+
-+// PFNGLCOPYIMAGESUBDATAEXTPROC glCopyImageSubDataEXT = nullptr;
-+
- void GLQueueRunner::PerformCopy(const GLRStep &step) {
- 	CHECK_GL_ERROR_IF_DEBUG();
- 	GLuint srcTex = 0;
 @@ -1446,39 +1453,38 @@
  		// TODO: Support depth copies.
  		_assert_msg_(false, "Depth copies not yet supported - soon");
