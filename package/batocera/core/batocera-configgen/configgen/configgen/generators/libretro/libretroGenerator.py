@@ -149,7 +149,7 @@ class LibretroGenerator(Generator):
         # The command to run
         dontAppendROM = False
         # For flycast cores on the A133 boards, we need to use an older SDL2-2.26 library
-        if system.name == 'dreamcast':
+        if system.name == 'dreamcast' or system.name == 'naomi' or system.name == 'naomi2' or system.name == 'atomiswave':
             board = self.get_board_info()
             if board == 'trimui-brick' or board == 'trimui-smart-pro':
                 commandEnv["LD_LIBRARY_PATH"] = "/usr/share/flycast"
