@@ -1333,10 +1333,7 @@ def writeBezelConfig(generator: Generator, bezel: str | None, shaderBezel: bool,
 
     if viewPortUsed:
         if gameResolution["width"] != infos["width"] or gameResolution["height"] != infos["height"]:
-            if gameRatio < 1.6 and gunsBordersSize is None: # let's use bezels only for 16:10, 5:3, 16:9 and wider aspect ratios ; don't skip if gun borders are needed
-                return
-            else:
-                bezelNeedAdaptation = True
+            bezelNeedAdaptation = True
         retroarchConfig['aspect_ratio_index'] = str(ratioIndexes.index("custom")) # overwritten from the beginning of this file
         if defined('ratio', system.config):
             if system.config['ratio'] in ratioIndexes:

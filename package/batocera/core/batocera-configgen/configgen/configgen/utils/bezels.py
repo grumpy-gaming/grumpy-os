@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import struct
+import math
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
@@ -26,35 +27,44 @@ class BezelInfos(TypedDict):
     mamezip: Path
     specific_to_game: bool
 
+def toAspectRatio(width: int, height: int) -> str:
+    ratio = math.gcd(width, height)
+    x = int(width / ratio)
+    y = int(height / ratio)
+    return str(x) + "_" + str(y)
 
 def getBezelInfos(rom: str | Path, bezel: str, systemName: str, emulator: str) -> BezelInfos | None:
     # by order choose :
-    # rom name with special resolution in the system subfolder of the user directory (gb/mario-640x480.png)
+    # rom name with specific aspect ratio in the system subfolder of the user directory (gb/mario-4_3.png)
     # rom name in the system subfolder of the user directory (gb/mario.png)
-    # rom name with special resolution in the system subfolder of the system directory (gb/mario-640x480.png)
+    # rom name with specific aspect ratio in the system subfolder of the system directory (gb/mario-4_3.png)
     # rom name in the system subfolder of the system directory (gb/mario.png)
-    # rom name with special resolution in the user directory (mario-640x480.png)
+    # rom name with specific aspect ratio in the user directory (mario-4_3.png)
     # rom name in the user directory (mario.png)
-    # rom name with special resolution in the system directory (mario-640x480.png)
+    # rom name with specific aspect ratio in the system directory (mario-4_3.png)
     # rom name in the system directory (mario.png)
-    # system name with special graphic in the user directory (gb-90.png)
-    # system name with special resolution in the user directory (gb-640x480.png)
+    # system name with special graphic in the user directory (gb-90-4_3.png)
+    # system name with specific aspect ratio in the user directory (gb-4_3.png)
     # system name in the user directory (gb.png)
-    # system name with special graphic in the system directory (gb-90.png)
-    # system name with special resolution in the system directory (gb-640x480.png)
+    # system name with special graphic in the system directory (gb-90-4_3.png)
+    # system name with specific aspect ratio in the system directory (gb-4_3.png)
     # system name in the system directory (gb.png)
-    # default name with special resolution (default-640x480.png)
+    # default name with specific aspect ratio (default-4_3.png)
     # default name (default.png)
     # else return
     # mamezip files are for MAME-specific advanced artwork (bezels with overlays and backdrops, animated LEDs, etc)
 
     # Retrieve Resolution for resolution specific decorations
+    eslog.debug(f"Attempting to get resolution.")
     resolutionObj = getCurrentResolution()
+    eslog.debug(f"Got resolution.")
     if resolutionObj:
         resolution = str(resolutionObj["width"]) + "x" + str(resolutionObj["height"])
+        aspectRatio = toAspectRatio(resolutionObj["width"], resolutionObj["height"])
         eslog.debug(f"Detected resolution: {resolution}")
+        eslog.debug(f"Detected aspect ratio: {aspectRatio}")
     else:
-        eslog.error(f"Unable to detect current resolution.")
+        eslog.error(f"Unable to detect current resolution/aspect ratio.")
 
     # Retrieve alternate decoration
     altDecoration = getAltDecoration(systemName, rom, emulator)
@@ -63,31 +73,31 @@ def getBezelInfos(rom: str | Path, bezel: str, systemName: str, emulator: str) -
     # Paths in order of priority
     search_paths = [
         # (pathBase, specific_to_game)
-        ( f"{USER_DECORATIONS}/{bezel}/games/{systemName}/{romBase}-{resolution}", True),
+        ( f"{USER_DECORATIONS}/{bezel}/games/{systemName}/{romBase}-{aspectRatio}", True),
         ( f"{USER_DECORATIONS}/{bezel}/games/{systemName}/{romBase}", True),
-        ( f"{SYSTEM_DECORATIONS}/{bezel}/games/{systemName}/{romBase}-{resolution}", True),
+        ( f"{SYSTEM_DECORATIONS}/{bezel}/games/{systemName}/{romBase}-{aspectRatio}", True),
         ( f"{SYSTEM_DECORATIONS}/{bezel}/games/{systemName}/{romBase}", True),
-        ( f"{USER_DECORATIONS}/{bezel}/games/{romBase}-{resolution}", True),
+        ( f"{USER_DECORATIONS}/{bezel}/games/{romBase}-{aspectRatio}", True),
         ( f"{USER_DECORATIONS}/{bezel}/games/{romBase}", True),
-        ( f"{SYSTEM_DECORATIONS}/{bezel}/games/{romBase}-{resolution}", True),
+        ( f"{SYSTEM_DECORATIONS}/{bezel}/games/{romBase}-{aspectRatio}", True),
         ( f"{SYSTEM_DECORATIONS}/{bezel}/games/{romBase}", True)
     ]
 
     if altDecoration != "0":
-        search_paths.append(( f"{USER_DECORATIONS}/{bezel}/systems/{systemName}-{altDecoration}-{resolution}", False))
-        search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/systems/{systemName}-{altDecoration}-{resolution}", False))
-        search_paths.append(( f"{USER_DECORATIONS}/{bezel}/default-{altDecoration}-{resolution}", True))
-        search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/default-{altDecoration}-{resolution}", True))
+        search_paths.append(( f"{USER_DECORATIONS}/{bezel}/systems/{systemName}-{altDecoration}-{aspectRatio}", False))
+        search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/systems/{systemName}-{altDecoration}-{aspectRatio}", False))
+        search_paths.append(( f"{USER_DECORATIONS}/{bezel}/default-{altDecoration}-{aspectRatio}", True))
+        search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/default-{altDecoration}-{aspectRatio}", True))
         search_paths.append(( f"{USER_DECORATIONS}/{bezel}/systems/{systemName}-{altDecoration}", False))
         search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/systems/{systemName}-{altDecoration}", False))
         search_paths.append(( f"{USER_DECORATIONS}/{bezel}/default-{altDecoration}", True))
         search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/default-{altDecoration}", True))
 
     if altDecoration != "90" and altDecoration != "270":
-        search_paths.append(( f"{USER_DECORATIONS}/{bezel}/systems/{systemName}-{resolution}", False))
-        search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/systems/{systemName}-{resolution}", False))
-        search_paths.append(( f"{USER_DECORATIONS}/{bezel}/default-{resolution}", True))
-        search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/default-{resolution}", True))
+        search_paths.append(( f"{USER_DECORATIONS}/{bezel}/systems/{systemName}-{aspectRatio}", False))
+        search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/systems/{systemName}-{aspectRatio}", False))
+        search_paths.append(( f"{USER_DECORATIONS}/{bezel}/default-{aspectRatio}", True))
+        search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/default-{aspectRatio}", True))
         search_paths.append(( f"{USER_DECORATIONS}/{bezel}/systems/{systemName}", False))
         search_paths.append(( f"{SYSTEM_DECORATIONS}/{bezel}/systems/{systemName}", False))
         search_paths.append(( f"{USER_DECORATIONS}/{bezel}/default", True))
