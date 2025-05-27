@@ -12,7 +12,7 @@ define KNULLI_BEZELS_INSTALL_TARGET_CMDS
 	rm -r $(TARGET_DIR)/usr/share/batocera/datainit/decorations/default-knulli
 	rm -r $(TARGET_DIR)/usr/share/batocera/datainit/decorations/default-knulli-sp
 	cp -rf $(@D)/default-knulli		      $(TARGET_DIR)/usr/share/batocera/datainit/decorations
-	cp -rf $(@D)/default-knulli-sp      $(TARGET_DIR)/usr/share/batocera/datainit/decorations
+	cp -rf $(@D)/default-knulli-sp	      $(TARGET_DIR)/usr/share/batocera/datainit/decorations
 	(cd $(TARGET_DIR)/usr/share/batocera/datainit/decorations && ln -sf default-knulli default)
 
 endef
