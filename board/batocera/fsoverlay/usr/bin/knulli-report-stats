@@ -1,0 +1,62 @@
+#!/bin/bash
+# This script is based on the original one from ROCKNIX
+# 
+# This script reports non personally identifiable information to KNULLI so that we can
+# see active user statistics.
+
+MACHINEIDFILE=/userdata/system/knulli-machine-id
+USERID=$(cat ${MACHINEIDFILE})
+OS_VERSION=$(cat /usr/share/batocera/batocera.version)
+SOC_DEVICE=$(cat /usr/share/batocera/batocera.arch)
+HW_DEVICE=$(cat /sys/firmware/devicetree/base/model 2>/dev/null | tr -d '\0' | sed -e s+"[^A-Za-z0-9]"+"_"+g)
+
+# Extract the date and time parts
+VERSION_DATE=$(echo "$OS_VERSION" | awk '{print $2}')
+VERSION_TIME=$(echo "$OS_VERSION" | awk '{print $3}')
+#
+# # Remove slashes from date, colons from time
+VERSION_DATE="${VERSION_DATE//\//}"    # 20250524
+VERSION_TIME="${VERSION_TIME//:/}"     # 1815
+#
+OS_BUILD="${VERSION_DATE}_${VERSION_TIME}"
+
+
+ENDPOINT_URL="https://stats.knulli.org"
+MAX_RETRIES=5
+RETRY_DELAY=60
+
+send_stats() {
+    curl -s -S -X POST \
+        -F "DEVICE_UID=${USERID:(-12)}" \
+        -F "DEVICE_VERSION=${OS_VERSION}" \
+        -F "DEVICE_BUILD=${OS_BUILD}" \
+        -F "DEVICE_SOC=${SOC_DEVICE}" \
+        -F "DEVICE_DEV=${HW_DEVICE}" \
+        $ENDPOINT_URL
+    return $?
+}
+
+# Try to send stats with retries
+retry_count=0
+while [ $retry_count -lt $MAX_RETRIES ]; do
+    # Check network connectivity first (ping DNS server)
+    if ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+        send_stats
+        exit_code=$?
+
+        if [ $exit_code -eq 0 ]; then
+            echo "Statistics reported successfully."
+            exit 0
+        else
+            echo "Failed to send statistics (HTTP error). Retrying in $RETRY_DELAY seconds..."
+        fi
+    else
+        echo "Network connection unavailable. Retrying in $RETRY_DELAY seconds..."
+    fi
+
+    sleep $RETRY_DELAY
+    retry_count=$((retry_count + 1))
+done
+
+echo "Maximum retry attempts reached. Failed to report statistics."
+exit 1

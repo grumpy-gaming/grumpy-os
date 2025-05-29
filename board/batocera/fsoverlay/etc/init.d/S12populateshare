@@ -155,6 +155,9 @@ test -e /userdata/system/machine-id || dbus-uuidgen --ensure=/userdata/system/ma
 ln -sf /userdata/system/machine-id /var/lib/dbus/machine-id
 ln -sf /userdata/system/machine-id /etc/machine-id
 
+# run machine-id-setup for the unique device id
+/usr/bin/machine-id-setup
+
 # save to avoid to redo that all the times
 cp /usr/share/batocera/batocera.version /userdata/system/data.version
 
