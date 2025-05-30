@@ -17,17 +17,18 @@ amixer set Master mute
 # Kill EmulationStation to be sure it will not write any existing settings
 /etc/init.d/S31emulationstation stop
 
+BACKUP_FOLDER_PATH="/userdata/system.$(date -d "today" +"%Y%m%d%H%M")"
+
 # Move the old system folder
-mv /userdata/system /userdata/system_$(date -d "today" +"%Y%m%d%H%M")
+mv /userdata/system $BACKUP_FOLDER_PATH
 
-# Remove PortMaster launch script if PortMaster was installed
-if [ -f /userdata/roms/ports/PortMaster.sh ]; then
-  rm /userdata/roms/ports/PortMaster.sh
-fi
+# Re-populate the system folder 
+/etc/init.d/S12populateshare start
 
-# Put the PortMaster installer back
-if [ ! -f /userdata/roms/ports/Install.PortMaster.sh ]; then
-  cp /usr/share/batocera/datainit/roms/ports/Install.PortMaster.sh /userdata/roms/ports/
+# Put PortMaster back if it was installed
+if [ ! -f $BACKUP_FOLDER_PATH/.local/share/PortMaster ]; then
+  mkdir -p /userdata/system/.local/share/
+  mv $BACKUP_FOLDER_PATH/.local/share/PortMaster /userdata/system/.local/share/PortMaster
 fi
 
 # Reboot
