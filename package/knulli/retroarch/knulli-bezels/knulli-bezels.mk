@@ -3,8 +3,8 @@
 # knulli bezels
 #
 ################################################################################
-# Version.: Commits on May 27, 2025
-KNULLI_BEZELS_VERSION = 14e46fdd2345648341a4d291ca5f903e223c41bb
+# Version.: Commits on May 31, 2025
+KNULLI_BEZELS_VERSION = efb5612b292193f13e9f3c4bb15f0e5ebe5f505e
 KNULLI_BEZELS_SITE = $(call github,chrizzo-hb,knulli-bezels,$(KNULLI_BEZELS_VERSION))
 
 define KNULLI_BEZELS_INSTALL_TARGET_CMDS
