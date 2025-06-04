@@ -51,6 +51,10 @@ for BATOCERA_PATHSUBTARGET in ${BATOCERA_IMAGES_TARGETS}
 do
     BATOCERA_SUBTARGET=$(basename "${BATOCERA_PATHSUBTARGET}")
 
+    #### create the update signatures #####
+    KNULLI_SIGNATURES_SCRIPT="${BR2_EXTERNAL_BATOCERA_PATH}/board/batocera/scripts/generate_signature.sh"
+    bash "${KNULLI_SIGNATURES_SCRIPT}" "${BR2_EXTERNAL_BATOCERA_PATH}/board/batocera/${BATOCERA_PATHSUBTARGET}" "${BINARIES_DIR}" || exit 1
+
     #### prepare the boot dir ######
     BOOTNAMEDDIR="${BATOCERA_BINARIES_DIR}/boot_${BATOCERA_SUBTARGET}"
     rm -rf "${BOOTNAMEDDIR}" || exit 1 # remove in case or rerun
@@ -64,6 +68,11 @@ do
     echo "creating images/${BATOCERA_SUBTARGET}/boot.tar.gxz"
     mkdir -p "${BATOCERA_BINARIES_DIR}/images/${BATOCERA_SUBTARGET}" || exit 1
     (cd "${BATOCERA_BINARIES_DIR}/boot" && tar -cf - * | pigz -9 > "${BATOCERA_BINARIES_DIR}/images/${BATOCERA_SUBTARGET}/knulli-${BATOCERA_LOWER_TARGET}-${BATOCERA_SUBTARGET}-${SUFFIXVERSION}-${SUFFIXDATE}_boot.tar.gz") || exit 1
+
+#    # move the partitions folder after we create the boot.tar.gz update archive
+#    if [ -d "${BATOCERA_BINARIES_DIR}/boot/partitions" ]; then
+#    	mv "${BATOCERA_BINARIES_DIR}/boot/partitions" "${BATOCERA_BINARIES_DIR}/"
+#    fi
 
     # rename the squashfs : the .update is the version that will be renamed at boot to replace the old version
     mv "${BATOCERA_BINARIES_DIR}/boot/boot/batocera.update" "${BATOCERA_BINARIES_DIR}/boot/boot/batocera" || exit 1
@@ -106,6 +115,9 @@ do
 
     # copy the version file needed for version check
     cp "${TARGET_DIR}/usr/share/batocera/batocera.version" "${BATOCERA_BINARIES_DIR}/images/${BATOCERA_SUBTARGET}" || exit 1
+
+    # copy the update signature files
+    cp "${BINARIES_DIR}/firmware.sig" "${BATOCERA_BINARIES_DIR}/images/${BATOCERA_SUBTARGET}" || exit 1
 done
 
 #### md5 and sha256 #######################

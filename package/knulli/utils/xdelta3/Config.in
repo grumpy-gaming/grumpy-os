@@ -1,0 +1,25 @@
+config BR2_PACKAGE_XDELTA3
+	bool "xdelta3"
+	help
+	  Xdelta3 is a command-line tool and library for delta compression
+	  using VCDIFF/RFC 3284 algorithms. It compresses the difference
+	  between an old file and a new file, creating a small patch file
+	  that can be used to recreate the new file from the old one.
+
+	  This is particularly useful for binary file updates, firmware
+	  patches, and reducing bandwidth requirements for file transfers.
+
+	  http://xdelta.org/
+
+if BR2_PACKAGE_XDELTA3
+
+config BR2_PACKAGE_XDELTA3_LZMA
+	bool "enable LZMA compression support"
+	select BR2_PACKAGE_XZ
+	help
+	  Enable LZMA/XZ compression support in xdelta3.
+	  This provides better compression ratios but requires
+	  additional dependencies.
+
+endif
+
