@@ -34,8 +34,9 @@ then
     then
 	echo "none"
     else
-	echo "${EXTRA}"
+	echo "[${EXTRA}]"
     fi
 else
-    echo -n "$(cat /usr/share/batocera/batocera.version)" && echo " [${EXTRA}]"
+    echo -n "$(cat /usr/share/batocera/batocera.version)"
+    test -n "${EXTRA}" && echo " [${EXTRA}]" || echo
 fi
