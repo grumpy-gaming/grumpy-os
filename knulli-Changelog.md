@@ -1,4 +1,4 @@
-# Knulli - Gladiator - (20250505)
+# (20250505)
 
 ## ChangeLog
 
